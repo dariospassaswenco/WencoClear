@@ -76,7 +76,7 @@ def query_gp_summaries(store: str, start_date: str, end_date: str):
         query = """
             SELECT 
                 "Store Number", 
-                SUM("Gross Profit No Supplies") as Total_GP
+                SUM("Gross Profit w/ Supplies") as Total_GP
             FROM 
                 bigo_sales_summary
             WHERE 
