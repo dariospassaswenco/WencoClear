@@ -21,7 +21,9 @@ def create_kpi_table():
             nitrogen INTEGER,
             gs_hours_worked FLOAT,
             tech_hours_worked FLOAT,
-            tech_hours_flagged FLOAT
+            tech_hours_flagged FLOAT,
+            gs_overtime FLOAT,
+            tech_overtime FLOAT
         )
     ''')
 
@@ -171,104 +173,71 @@ def fetch_and_insert_kpi_data(week_start, week_end):
         ''', (week_start, week_end))
         bigo_details = cursor.fetchall()
 
-        # GS Hours Worked
+        # GS Hours Worked and Overtime
         cursor.execute('''
             SELECT 
                 t.wenco_id, 
-                SUM(t.hours) as gs_hours_worked
+                SUM(t.total_hours) as gs_hours_worked,
+                SUM(t.overtime_hours) as gs_overtime
             FROM 
-                bigo_timesheet t
+                wenco_timesheet t
             JOIN 
                 employees e ON t.first_name = e.first_name AND t.last_name = e.last_name
             JOIN 
                 positions p ON e.position_id = p.position_id
             WHERE 
                 p.title = 'GS'
-                AND t.date BETWEEN ? AND ?
+                AND t.week_start = ?
+                AND t.week_end = ?
             GROUP BY 
                 t.wenco_id
         ''', (week_start, week_end))
-        bigo_gs_hours = cursor.fetchall()
+        gs_hours = cursor.fetchall()
 
+        # Tech Hours Worked and Overtime
         cursor.execute('''
             SELECT 
                 t.wenco_id, 
-                SUM(t.hours) as gs_hours_worked
+                SUM(t.total_hours) as tech_hours_worked,
+                SUM(t.overtime_hours) as tech_overtime
             FROM 
-                midas_timesheet t
-            JOIN 
-                employees e ON t.first_name = e.first_name AND t.last_name = e.last_name
-            JOIN 
-                positions p ON e.position_id = p.position_id
-            WHERE 
-                p.title = 'GS'
-                AND t.date BETWEEN ? AND ?
-            GROUP BY 
-                t.wenco_id
-        ''', (week_start, week_end))
-        midas_gs_hours = cursor.fetchall()
-
-        all_gs_hours = bigo_gs_hours + midas_gs_hours
-
-        # Tech Hours Worked
-        cursor.execute('''
-            SELECT 
-                t.wenco_id, 
-                SUM(t.hours) as tech_hours_worked
-            FROM 
-                bigo_timesheet t
+                wenco_timesheet t
             JOIN 
                 employees e ON t.first_name = e.first_name AND t.last_name = e.last_name
             JOIN 
                 positions p ON e.position_id = p.position_id
             WHERE 
                 p.title = 'Tech'
-                AND t.date BETWEEN ? AND ?
+                AND t.week_start = ?
+                AND t.week_end = ?
             GROUP BY 
                 t.wenco_id
         ''', (week_start, week_end))
-        bigo_tech_hours = cursor.fetchall()
-
-        cursor.execute('''
-            SELECT 
-                t.wenco_id, 
-                SUM(t.hours) as tech_hours_worked
-            FROM 
-                midas_timesheet t
-            JOIN 
-                employees e ON t.first_name = e.first_name AND t.last_name = e.last_name
-            JOIN 
-                positions p ON e.position_id = p.position_id
-            WHERE 
-                p.title = 'Tech'
-                AND t.date BETWEEN ? AND ?
-            GROUP BY 
-                t.wenco_id
-        ''', (week_start, week_end))
-        midas_tech_hours = cursor.fetchall()
-
-        all_tech_hours = bigo_tech_hours + midas_tech_hours
+        tech_hours = cursor.fetchall()
 
         # Tech Hours Flagged
         cursor.execute('''
-            SELECT 
-                e.store_id as wenco_id,
-                SUM(t.labor_quantity) as tech_hours_flagged
-            FROM 
-                bigo_tech_summary t
-            JOIN 
-                employees e ON t.first_name = e.first_name AND t.last_name = e.last_name
-            WHERE 
-                t.start_date = ? AND t.end_date = ?
-            GROUP BY 
-                e.store_id
-        ''', (week_start, week_end))
+                    SELECT 
+                        e.store_id as wenco_id,
+                        SUM(t.tech_hours_flagged) as tech_hours_flagged
+                    FROM 
+                        bigo_tech_summary t
+                    JOIN 
+                        employees e ON t.first_name = e.first_name AND t.last_name = e.last_name
+                    WHERE 
+                        t.start_date = ? AND t.end_date = ?
+                    GROUP BY 
+                        e.store_id
+                ''', (week_start, week_end))
         bigo_tech_flagged = cursor.fetchall()
+
+        # Debug: Print fetched data for verification
+        print("Bigo Tech Flagged Hours:", bigo_tech_flagged)
 
         cursor.execute('''
             SELECT 
                 wenco_id,
-                SUM(time) as tech_hours_flagged
+                SUM(tech_hours_flagged) as tech_hours_flagged
             FROM 
                 midas_tech_summary
             WHERE 
@@ -293,16 +262,18 @@ def fetch_and_insert_kpi_data(week_start, week_end):
             tires = next((t for s, a, t, n in bigo_details if s == store_number), 0)
             nitrogen = next((n for s, a, t, n in bigo_details if s == store_number), 0)
 
-            gs_hours_worked = next((gh for s, gh in all_gs_hours if s == store_number), 0)
-            tech_hours_worked = next((th for s, th in all_tech_hours if s == store_number), 0)
+            gs_hours_worked = next((gh for s, gh, go in gs_hours if s == store_number), 0)
+            gs_overtime = next((go for s, gh, go in gs_hours if s == store_number), 0)
+            tech_hours_worked = next((th for s, th, to in tech_hours if s == store_number), 0)
+            tech_overtime = next((to for s, th, to in tech_hours if s == store_number), 0)
             tech_hours_flagged = next((tf for s, tf in all_tech_flagged if s == store_number), 0)
 
             cursor.execute('''
-                INSERT INTO kpi_weekly_summary (wenco_id, dm_id, week_start, week_end, revenue, gross_profit, labor_revenue, cars, alignments, tires, nitrogen, gs_hours_worked, tech_hours_worked, tech_hours_flagged)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO kpi_weekly_summary (wenco_id, dm_id, week_start, week_end, revenue, gross_profit, labor_revenue, cars, alignments, tires, nitrogen, gs_hours_worked, tech_hours_worked, tech_hours_flagged, gs_overtime, tech_overtime)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 store_number, dm_id, week_start, week_end, revenue, gross_profit, labor_revenue, cars, alignments, tires,
-                nitrogen, gs_hours_worked, tech_hours_worked, tech_hours_flagged))
+                nitrogen, gs_hours_worked, tech_hours_worked, tech_hours_flagged, gs_overtime, tech_overtime))
 
         conn.commit()
 
