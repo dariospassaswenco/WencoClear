@@ -1,6 +1,55 @@
 import sqlite3
-from database.db_helpers import get_db_connection
+from datetime import datetime, timedelta
 from contextlib import closing
+from database.db_helpers import get_db_connection
+
+def get_week_start_end(date_obj):
+    start = date_obj - timedelta(days=date_obj.weekday() + 1)
+    end = start + timedelta(day = 6)
+    return start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d')
+
+def create_tables():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Create wenco_timesheet table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS wenco_timesheet (
+            wenco_id INTEGER,
+            week_start DATE,
+            week_end DATE,
+            first_name TEXT,
+            last_name TEXT,
+            total_hours FLOAT,
+            overtime_hours FLOAT
+        )
+    ''')
+
+    # Create kpi_weekly_summary table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS kpi_weekly_summary (
+            wenco_id INTEGER,
+            dm_id INTEGER,
+            week_start DATE,
+            week_end DATE,
+            revenue FLOAT,
+            gross_profit FLOAT,
+            labor_revenue FLOAT,
+            cars INTEGER,
+            alignments INTEGER,
+            tires INTEGER,
+            nitrogen INTEGER,
+            gs_hours_worked FLOAT,
+            tech_hours_worked FLOAT,
+            tech_hours_flagged FLOAT,
+            gs_overtime FLOAT,
+            tech_overtime FLOAT,
+            PRIMARY KEY (wenco_id, week_start, week_end)
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
 
 def fetch_week_ranges():
     with closing(get_db_connection()) as conn:
@@ -8,6 +57,55 @@ def fetch_week_ranges():
         cursor.execute('SELECT week_start, week_end FROM week_ranges ORDER BY week_start')
         weeks = cursor.fetchall()
     return weeks
+
+def fetch_and_insert_timesheet_data(week_start, week_end):
+    with closing(get_db_connection()) as conn:
+        cursor = conn.cursor()
+
+        # Fetch Midas timesheet data
+        cursor.execute('''
+            SELECT 
+                wenco_id,
+                first_name,
+                last_name,
+                SUM(hours) as total_hours
+            FROM 
+                midas_timesheet
+            WHERE 
+                date BETWEEN ? AND ?
+            GROUP BY 
+                wenco_id, first_name, last_name
+        ''', (week_start, week_end))
+        midas_timesheet = cursor.fetchall()
+
+        # Fetch Big O timesheet data
+        cursor.execute('''
+            SELECT 
+                wenco_id,
+                first_name,
+                last_name,
+                SUM(hours) as total_hours
+            FROM 
+                bigo_timesheet
+            WHERE 
+                date BETWEEN ? AND ?
+            GROUP BY 
+                wenco_id, first_name, last_name
+        ''', (week_start, week_end))
+        bigo_timesheet = cursor.fetchall()
+
+        all_timesheet = midas_timesheet + bigo_timesheet
+
+        # Insert data into wenco_timesheet table
+        for wenco_id, first_name, last_name, total_hours in all_timesheet:
+            total_hours = total_hours if total_hours is not None else 0
+            overtime_hours = max(0, total_hours - 40)
+            cursor.execute('''
+                INSERT INTO wenco_timesheet (wenco_id, week_start, week_end, first_name, last_name, total_hours, overtime_hours)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (wenco_id, week_start, week_end, first_name, last_name, total_hours, overtime_hours))
+
+        conn.commit()
 
 def fetch_and_update_kpi_data(week_start, week_end):
     with closing(get_db_connection()) as conn:
@@ -165,6 +263,7 @@ def fetch_and_update_kpi_data(week_start, week_end):
                 t.wenco_id
         ''', (week_start, week_end))
         gs_hours = cursor.fetchall()
+        print("GS Hours: ", gs_hours)
 
         # Tech Hours Worked and Overtime
         cursor.execute('''
@@ -186,6 +285,7 @@ def fetch_and_update_kpi_data(week_start, week_end):
                 t.wenco_id
         ''', (week_start, week_end))
         tech_hours = cursor.fetchall()
+        print("Tech Hours: ", tech_hours)
 
         # Tech Hours Flagged
         cursor.execute('''
@@ -202,6 +302,7 @@ def fetch_and_update_kpi_data(week_start, week_end):
                 e.store_id
         ''', (week_start, week_end))
         bigo_tech_flagged = cursor.fetchall()
+        print("Bigo Tech Flagged: ", bigo_tech_flagged)
 
         cursor.execute('''
             SELECT 
@@ -215,8 +316,10 @@ def fetch_and_update_kpi_data(week_start, week_end):
                 wenco_id
         ''', (week_start, week_end))
         midas_tech_flagged = cursor.fetchall()
+        print("Midas Tech Flagged: ", midas_tech_flagged)
 
         all_tech_flagged = bigo_tech_flagged + midas_tech_flagged
+        print("All Tech Flagged: ", all_tech_flagged)
 
         # Insert or update data into KPI table
         for store_number, revenue in all_sales:
@@ -260,9 +363,12 @@ def fetch_and_update_kpi_data(week_start, week_end):
         conn.commit()
 
 if __name__ == "__main__":
+    create_tables()
+
     # Fetch all unique week start and end dates
     weeks = fetch_week_ranges()
 
-    # Iterate through each week range and update KPI data
+    # Iterate through each week range and update timesheet data
     for week_start, week_end in weeks:
+        fetch_and_insert_timesheet_data(week_start, week_end)
         fetch_and_update_kpi_data(week_start, week_end)

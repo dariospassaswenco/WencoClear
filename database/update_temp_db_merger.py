@@ -30,7 +30,7 @@ table_mappings = {
     },
     "midas_tech_summary": {
         "old": ["First Name", "Last Name", "Start Date", "End Date", "Store #", "Time", "Labor Sales", "Part Sales", "No of ROs", "Total Sales"],
-        "new": ["wenco_id", "first_name", "last_name", "start_date", "end_date", "tech_hours_flagged", "labor_revenue", "part_revenue", "car_count", "total_revenue"],
+        "new": ["first_name", "last_name", "start_date", "end_date", "wenco_id", "tech_hours_flagged", "labor_revenue", "part_revenue", "car_count", "total_revenue"],
         "table": "midas_tech_summary"
     },
     "midas_sales_summary": {
