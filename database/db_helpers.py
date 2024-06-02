@@ -1,12 +1,12 @@
 import sqlite3
 from contextlib import closing
 from typing import List
-from config.settings import DATABASE_PATH
+from config.settings import CLEAR_DATABASE_PATH
 from database.models import BigoSalesSummary, BigoTechSummary, BigoTimesheet, MidasSalesSummary, MidasTechSummary, MidasTimesheet
 
 def get_db_connection():
     """Establish a connection to the SQLite database."""
-    return sqlite3.connect(DATABASE_PATH)
+    return sqlite3.connect(CLEAR_DATABASE_PATH)
 
 def employee_exists(first_name: str, last_name: str) -> int:
     """Check if an employee exists in the database and return the employee_id if they do."""

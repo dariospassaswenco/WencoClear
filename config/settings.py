@@ -1,8 +1,18 @@
+# config/settings.py
 import os
 from dotenv import load_dotenv
+import configparser
 
-load_dotenv()
+# Load .env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
-DATABASE_PATH = os.getenv('DATABASE_PATH')
+# Load config.ini file
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'crystal_config.ini'))
 
-WENCO_EXCEL_REPORT_NAME = os.getenv('WENCO_REPORT_PATH')
+
+# Get settings from .env file
+OLD_DATABASE_PATH = config['DEFAULT']['OldDatabasePath']
+
+# Get settings from config.ini file
+CLEAR_DATABASE_PATH = config['DEFAULT']['ClearDatabasePath']
