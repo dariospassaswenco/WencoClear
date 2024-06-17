@@ -4,8 +4,7 @@ from generators.base_report_generator import ReportGenerator
 from navigation.navex_report_navigation import BigoReportActions
 from navigation.navex_basic_navigation import BigoNavigation
 from config.pos_config import bigo_config
-from config.app_settings import BIGO_STORE_NUMBERS
-from config.app_settings import BIGO_FILENAME_PATTERN
+from config.app_settings import BIGO_STORE_NUMBERS, BIGO_FILENAME_PATTERN
 
 class BigoReportGenerator(ReportGenerator):
     def __init__(self):
@@ -22,7 +21,8 @@ class BigoReportGenerator(ReportGenerator):
         self.actions = BigoReportActions(self.app, self.config)
 
     def restart_pos(self):
-        self.app.kill()
+        navigation = BigoNavigation()
+        navigation.close_pos()
         self.prepare_pos()
 
     def generate_ss_reports(self, missing_dates_per_store, retry=False):
@@ -49,41 +49,57 @@ class BigoReportGenerator(ReportGenerator):
             else:
                 print(f"Failed to generate SS reports after retrying: {e}")
 
-    def generate_timesheet_reports(self, missing_weeks_per_store):
-        unique_weeks = set()
-        for weeks in missing_weeks_per_store.values():
-            unique_weeks.update(weeks)
-        end_dates = [datetime.strptime(pair[1], '%Y-%m-%d') for pair in unique_weeks]
-        self.actions.select_report(self.config["timesheet_report_title"])
-        for end_date in end_dates:
-            end_date_str = end_date.strftime('%Y-%m-%d')
-            start_date = end_date - timedelta(days=7)
-            file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
-            pos_formatted_start_date = start_date.strftime('%m%d%Y')
-            pos_formatted_end_date = end_date.strftime('%m%d%Y')
-            self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-            self.actions.select_generate_report()  # Click excel button
-            self.actions.enter_file_destination()
-            self.actions.enter_filename(file_name)
-            self.actions.save_file()
-            self.actions.ts_select_employees()
-            self.actions.wait_for_report_to_compile()
-            self.actions.cleanup_and_close(end_date_str)
-        self.extractor.extract_reports()
+    def generate_timesheet_reports(self, missing_dates_per_store, retry=False):
+        try:
+            unique_weeks = set()
+            for weeks in missing_dates_per_store.values():
+                unique_weeks.update(weeks)
+            end_dates = [datetime.strptime(pair[1], '%Y-%m-%d') for pair in unique_weeks]
+            self.actions.select_report(self.config["timesheet_report_title"])
+            for end_date in end_dates:
+                end_date_str = end_date.strftime('%Y-%m-%d')
+                start_date = end_date - timedelta(days=7)
+                file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
+                pos_formatted_start_date = start_date.strftime('%m%d%Y')
+                pos_formatted_end_date = end_date.strftime('%m%d%Y')
+                self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
+                self.actions.select_generate_report()  # Click excel button
+                self.actions.enter_file_destination()
+                self.actions.enter_filename(file_name)
+                self.actions.save_file()
+                self.actions.ts_select_employees()
+                self.actions.wait_for_report_to_compile()
+                self.actions.cleanup_and_close(end_date_str)
+            self.extractor.extract_reports()
+        except Exception as e:
+            if not retry:
+                print(f"Error generating Timesheet reports: {e}. Retrying...")
+                self.restart_pos()
+                self.generate_timesheet_reports(missing_dates_per_store, retry=True)
+            else:
+                print(f"Failed to generate Timesheet reports after retrying: {e}")
 
-    def generate_tech_reports(self, missing_weeks):
-        self.actions.select_report(self.config["tech_report_title"])
-        for date_range in missing_weeks:
-            start_date_str, end_date_str = date_range
-            file_name = BIGO_FILENAME_PATTERN.format(store_number="TECH", report_type='tech', date=end_date_str)
-            pos_formatted_start_date = datetime.strptime(start_date_str, '%m%d%Y')
-            pos_formatted_end_date = datetime.strptime(end_date_str, '%m%d%Y')
-            self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-            self.actions.select_generate_report()  # Click excel button
-            self.actions.enter_file_destination()
-            self.actions.enter_filename(file_name)
-            self.actions.save_file()
-            self.actions.ts_select_employees()
-            self.actions.wait_for_report_to_compile()
-            self.actions.cleanup_and_close(end_date_str)
-        self.extractor.extract_reports()
+    def generate_tech_reports(self, missing_dates, retry=False):
+        try:
+            self.actions.select_report(self.config["tech_report_title"])
+            for date_range in missing_dates:
+                start_date_str, end_date_str = date_range
+                file_name = BIGO_FILENAME_PATTERN.format(store_number="TECH", report_type='tech', date=end_date_str)
+                pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+                pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+                self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
+                self.actions.select_generate_report()  # Click excel button
+                self.actions.enter_file_destination()
+                self.actions.enter_filename(file_name)
+                self.actions.save_file()
+                self.actions.ts_select_employees()
+                self.actions.wait_for_report_to_compile()
+                self.actions.cleanup_and_close(end_date_str)
+            self.extractor.extract_reports()
+        except Exception as e:
+            if not retry:
+                print(f"Error generating Tech reports: {e}. Retrying...")
+                self.restart_pos()
+                self.generate_tech_reports(missing_dates, retry=True)
+            else:
+                print(f"Failed to generate Tech reports after retrying: {e}")

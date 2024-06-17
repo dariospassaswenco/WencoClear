@@ -1,20 +1,23 @@
 from datetime import datetime, timedelta
 from generators.midas_report_generator import MidasReportGenerator
 from generators.bigo_report_generator import BigoReportGenerator
-from navigation.ro_basic_navigation import MidasNavigation
-from navigation.navex_basic_navigation import BigoNavigation
-from config.app_settings import *
+from config.app_settings import MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS
 
 def test_midas_reports():
     print("Testing Midas Reports")
 
     # Generate future dates
-    start_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    end_date = (datetime.today() + timedelta(days=2)).strftime('%Y-%m-%d')
-    future_dates = {store: [start_date] for store in MIDAS_STORE_NUMBERS}
+    test_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    future_dates = {store: [test_date] for store in MIDAS_STORE_NUMBERS}
 
-    midas_navigation = MidasNavigation()
-    midas_navigation.prepare_pos()
+    print("Midas Sales Summary Data to be passed:")
+    print(future_dates)
+
+    print("Midas Tech Data to be passed:")
+    print(future_dates)
+
+    print("Midas Timesheet Data to be passed:")
+    print(future_dates)
 
     midas_generator = MidasReportGenerator()
     midas_generator.prepare_pos()
@@ -31,21 +34,25 @@ def test_midas_reports():
     print("Testing Midas Timesheet Report")
     midas_generator.generate_timesheet_reports(future_dates)
 
-    midas_navigation.close_pos()
+    midas_generator.actions.app.kill()  # Close POS
     print("Midas Reports Test Completed")
-
 
 def test_bigo_reports():
     print("Testing Bigo Reports")
 
     # Generate future dates
-    start_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    end_date = (datetime.today() + timedelta(days=2)).strftime('%Y-%m-%d')
-    future_dates = {store: [start_date] for store in BIGO_STORE_NUMBERS}
-    future_dates_list = [start_date]
+    test_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    future_dates = {store: [test_date] for store in BIGO_STORE_NUMBERS}
+    future_dates_list = [test_date]
 
-    bigo_navigation = BigoNavigation()
-    bigo_navigation.prepare_pos()
+    print("Bigo Sales Summary Data to be passed:")
+    print(future_dates)
+
+    print("Bigo Tech Data to be passed:")
+    print(future_dates_list)
+
+    print("Bigo Timesheet Data to be passed:")
+    print(future_dates_list)
 
     bigo_generator = BigoReportGenerator()
     bigo_generator.prepare_pos()
@@ -62,9 +69,8 @@ def test_bigo_reports():
     print("Testing Bigo Timesheet Report")
     bigo_generator.generate_timesheet_reports(future_dates_list)
 
-    bigo_navigation.close_pos()
+    bigo_generator.actions.app.kill()  # Close POS
     print("Bigo Reports Test Completed")
-
 
 if __name__ == "__main__":
     test_midas_reports()
