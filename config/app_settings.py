@@ -5,7 +5,8 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 
 # Load .env file
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.env'))
+print(f"Loading .env file from: {env_path}")
 
 # Load config.ini file
 config = configparser.ConfigParser()
