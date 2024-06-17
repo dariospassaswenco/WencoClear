@@ -48,15 +48,15 @@ class MidasReportGenerator(ReportGenerator):
             else:
                 print(f"Failed to generate SS reports after retrying: {e}")
 
-    def generate_timesheet_reports(self, missing_weeks_per_store):
+    def generate_timesheet_reports(self, missing_dates_per_store):
         self.actions.select_other_reports_menu()
         self.actions.select_initial_store()
-        for store_number, weeks in missing_weeks_per_store.items():
+        for store_number, missing_dates in missing_dates_per_store.items():
             self.actions.select_current_store(store_number)
-            for start_date_str, end_date_str in weeks:
+            for start_date_str, end_date_str in missing_dates:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
                 end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-                start_date = end_date - timedelta(days=14)  # Adjust start date to be 14 days prior to end date
-                file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='ts',date=end_date_str)
+                file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='ts', date=end_date_str)
                 pos_formatted_start_date = start_date.strftime('%m%d%Y')
                 pos_formatted_end_date = end_date.strftime('%m%d%Y')
                 self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
@@ -67,20 +67,20 @@ class MidasReportGenerator(ReportGenerator):
                 self.actions.enter_filename(file_name)
                 self.actions.enter_file_destination()
                 self.actions.cleanup_and_close()
-            self.extractor.extract_reports() # Extract the files for that store along the way # Extract the files for that store along the way
+            self.extractor.extract_reports()
 
 
-
-    def generate_tech_reports(self, missing_weeks):
+    def generate_tech_reports(self, missing_dates_per_store):
         self.actions.select_sales_reports_menu()
         self.actions.select_initial_store()
-        for store_name, store_number in self.stores.items():
+        for store_number, missing_dates in missing_dates_per_store.items():
             self.actions.select_current_store(store_number)
-            for date_range in missing_weeks:  # Assuming missing_weeks is a list of tuples (start_date_str, end_date_str)
-                start_date_str, end_date_str = date_range  # Unpack the tuple
+            for start_date_str, end_date_str in missing_dates:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
                 file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='tech', date=end_date_str)
-                pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
-                pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+                pos_formatted_start_date = start_date.strftime('%m%d%Y')
+                pos_formatted_end_date = end_date.strftime('%m%d%Y')
                 self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
                 self.actions.tech_select_tech_report()
                 self.actions.wait_for_report_to_compile()
@@ -88,5 +88,5 @@ class MidasReportGenerator(ReportGenerator):
                 self.actions.enter_filename(file_name)
                 self.actions.enter_file_destination()
                 self.actions.cleanup_and_close()
-            self.extractor.extract_reports()  # Extract the files for that store along the way
+            self.extractor.extract_reports()
         self.actions.return_to_main_menu()

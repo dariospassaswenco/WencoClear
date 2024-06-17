@@ -1,9 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget
-from views.data_checkup_view.helpers import run_data_checkup
-from views.data_checkup_view.fetch_functions import fetch_all_missing_data
-from views.data_checkup_view.display_functions import display_data, display_tech_data, display_timesheet_data
-from views.data_checkup_view.fetch_functions import fetch_missing_midas_ss_reports  # Import the new function
 from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget
+from .helpers import run_data_checkup
+from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, fetch_missing_timesheet_data
+from .display_functions import display_data, display_tech_data, display_timesheet_data
 
 class DataCheckupView(QWidget):
     def __init__(self, stacked_widget, parent=None):
@@ -95,6 +94,8 @@ class DataCheckupView(QWidget):
 
     def fetch_missing_data(self, report_type):
         if report_type == "Sales Summary":
-            fetch_missing_midas_ss_reports(self)
-        # Add more conditions for other report types if needed
-
+            fetch_missing_ss_data(self)
+        elif report_type == "Tech Data":
+            fetch_missing_tech_data(self)
+        elif report_type == "Timesheet Data":
+            fetch_missing_timesheet_data(self)

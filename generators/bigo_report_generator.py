@@ -30,20 +30,16 @@ class BigoReportGenerator(ReportGenerator):
                 self.actions.cleanup_and_close(date)
             self.extractor.extract_reports()  # Extract the files for that store along the way
 
-    def generate_timesheet_reports(self, missing_weeks_per_store):
-        unique_weeks = set()
-        for weeks in missing_weeks_per_store.values():
-            unique_weeks.update(weeks)
-        end_dates = [datetime.strptime(pair[1], '%Y-%m-%d') for pair in unique_weeks]
+    def generate_timesheet_reports(self, missing_dates):
         self.actions.select_report(self.config["timesheet_report_title"])
-        for end_date in end_dates:
-            end_date_str = end_date.strftime('%Y-%m-%d')
-            start_date = end_date - timedelta(days=7)
+        for start_date_str, end_date_str in missing_dates:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
             file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
             pos_formatted_start_date = start_date.strftime('%m%d%Y')
             pos_formatted_end_date = end_date.strftime('%m%d%Y')
             self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-            self.actions.select_generate_report() # Click excel button
+            self.actions.select_generate_report()
             self.actions.enter_file_destination()
             self.actions.enter_filename(file_name)
             self.actions.save_file()
@@ -52,15 +48,16 @@ class BigoReportGenerator(ReportGenerator):
             self.actions.cleanup_and_close(end_date_str)
         self.extractor.extract_reports()
 
-    def generate_tech_reports(self, missing_weeks):
+    def generate_tech_reports(self, missing_dates):
         self.actions.select_report(self.config["tech_report_title"])
-        for date_range in missing_weeks:
-            start_date_str, end_date_str = date_range
+        for start_date_str, end_date_str in missing_dates:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
             file_name = BIGO_FILENAME_PATTERN.format(store_number="TECH", report_type='tech', date=end_date_str)
-            pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
-            pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+            pos_formatted_start_date = start_date.strftime('%m%d%Y')
+            pos_formatted_end_date = end_date.strftime('%m%d%Y')
             self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-            self.actions.select_generate_report() # Click excel button
+            self.actions.select_generate_report()
             self.actions.enter_file_destination()
             self.actions.enter_filename(file_name)
             self.actions.save_file()
