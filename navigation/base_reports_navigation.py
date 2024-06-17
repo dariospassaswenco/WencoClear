@@ -10,19 +10,15 @@ class ReportActions():
         self.output_file = OUTPUTS
         self.app = None
 
-    def perform_action_with_retry(self, action, action_args=(), max_attempts=3, retry_interval=2):
-        attempts = 0
-        while attempts < max_attempts:
+    def perform_action_with_retry(self, action, retries=3, delay=2):
+        for attempt in range(retries):
             try:
-                action(*action_args)
-                print(f"{action.__name__} succeeded.")
-                return True
-            except ElementNotFoundError as e:
-                print(f"Attempt {attempts + 1}: {action.__name__} failed with error: {e}. Retrying...")
-                time.sleep(retry_interval)
-                attempts += 1
-        print(f"Action {action.__name__} failed after {max_attempts} attempts.")
-        return False
+                action()
+                return
+            except Exception as e:
+                print(f"Error performing action: {e}. Retrying ({attempt + 1}/{retries})...")
+                time.sleep(delay)
+        print("Failed to perform action after multiple retries.")
 
     def select_ss_report(self):
         raise NotImplementedError("This method should be implemented by subclasses.")

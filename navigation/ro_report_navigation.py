@@ -10,15 +10,6 @@ class MidasReportActions(ReportActions):
         self.config = config
         self.app = app
 
-    def perform_action_with_retry(self, action, retries=3, delay=2):
-        for attempt in range(retries):
-            try:
-                action()
-                return
-            except Exception as e:
-                print(f"Error performing action: {e}. Retrying ({attempt + 1}/{retries})...")
-                time.sleep(delay)
-        print("Failed to perform action after multiple retries.")
 
     def select_initial_store(self):
         def action():
