@@ -141,7 +141,7 @@ class BigoReportActions(ReportActions):
             save_in_list = save_in_cb.child_window(title="Save in:", control_type="List")
             documents = save_in_list.child_window(title="Documents", control_type="ListItem")
             documents.click_input()
-            folder_output = save_as_dialog.child_window(title="WencoOutputs", control_type="ListItem")
+            folder_output = save_as_dialog.child_window(title="WencoClearOutputs", control_type="ListItem")
             folder_output.double_click_input()
             time.sleep(0.5)
         self.perform_action_with_retry(action)
