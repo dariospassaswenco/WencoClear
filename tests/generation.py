@@ -10,7 +10,7 @@ def test_midas_reports():
 
     # Generate future dates
     start_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    end_date = (datetime.today() + timedelta(days=7)).strftime('%Y-%m-%d')
+    end_date = (datetime.today() + timedelta(days=2)).strftime('%Y-%m-%d')
     future_dates = {store: [start_date] for store in MIDAS_STORE_NUMBERS}
 
     midas_navigation = MidasNavigation()
@@ -40,7 +40,7 @@ def test_bigo_reports():
 
     # Generate future dates
     start_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    end_date = (datetime.today() + timedelta(days=7)).strftime('%Y-%m-%d')
+    end_date = (datetime.today() + timedelta(days=2)).strftime('%Y-%m-%d')
     future_dates = {store: [start_date] for store in BIGO_STORE_NUMBERS}
     future_dates_list = [start_date]
 
