@@ -1,3 +1,4 @@
+#navigation/base_basic_navigation
 import time
 import psutil
 import subprocess
@@ -40,7 +41,7 @@ class BasicNavigation:
     def launchPOS(self):
         try:
             os.chdir(self.working_directory)
-            subprocess.Popen(os.path.join(self.working_directory, self.executable_path))
+            subprocess.Popen(self.executable_path)
             print(f"Launching {self.pos_name}")
         except FileNotFoundError:
             print(f"{self.pos_name} executable not found. Please provide a valid path.")

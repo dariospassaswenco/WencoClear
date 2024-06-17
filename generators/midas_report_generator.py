@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from pywinauto.application import Application
 from generators.base_report_generator import ReportGenerator
 from navigation.ro_report_navigation import MidasReportActions
+from navigation.ro_basic_navigation import MidasNavigation
 from config.pos_config import midas_config
 from config.app_settings import MIDAS_STORE_NUMBERS, MIDAS_FILENAME_PATTERN
 
@@ -14,11 +15,12 @@ class MidasReportGenerator(ReportGenerator):
         self.actions = None
 
     def prepare_pos(self):
+        navigation = MidasNavigation()
+        navigation.prepare_pos()
         self.app = Application(backend="uia").connect(title=self.config["reporting_window_title"])
         self.actions = MidasReportActions(self.app, self.config)
 
     def restart_pos(self):
-        # Close the POS application and restart it
         self.app.kill()
         self.prepare_pos()
 
@@ -38,7 +40,7 @@ class MidasReportGenerator(ReportGenerator):
                     self.actions.enter_filename(file_name)
                     self.actions.enter_file_destination()
                     self.actions.cleanup_and_close()
-                self.extractor.extract_reports() # Extract the files for that store along the way
+                self.extractor.extract_reports()  # Extract the files for that store along the way
             self.actions.return_to_main_menu()
         except Exception as e:
             if not retry:
@@ -68,7 +70,6 @@ class MidasReportGenerator(ReportGenerator):
                 self.actions.enter_file_destination()
                 self.actions.cleanup_and_close()
             self.extractor.extract_reports()
-
 
     def generate_tech_reports(self, missing_dates_per_store):
         self.actions.select_sales_reports_menu()

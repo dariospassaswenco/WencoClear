@@ -14,7 +14,6 @@ class BigoNavigation(BasicNavigation):
     def set_attributes(self):
         self.config = bigo_config
         self.pos_name = self.config["pos_name"]
-        self.working_directory = NAVEX_WORKING_DIRECTORY
         self.executable_path = self.config["executable"]
         self.running_program_title = self.config["running_program_title"]
         self.main_window_title = self.config["main_window_title"]

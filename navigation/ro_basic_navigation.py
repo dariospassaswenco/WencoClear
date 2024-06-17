@@ -1,9 +1,9 @@
+#navigation/ro_basic_navigation
 from .base_basic_navigation import BasicNavigation
 from config.pos_config import midas_config
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
 from pywinauto import Desktop
-# from config.app_config import RO_WORKING_DIRECTORY
 import psutil
 
 
@@ -15,7 +15,6 @@ class MidasNavigation(BasicNavigation):
     def set_attributes(self):
         self.config = midas_config
         self.pos_name = self.config["pos_name"]
-        self.working_directory = RO_WORKING_DIRECTORY
         self.executable_path = self.config["executable"]
         self.running_program_title = self.config["running_program_title"]
         self.main_window_title = self.config["main_window_title"]
