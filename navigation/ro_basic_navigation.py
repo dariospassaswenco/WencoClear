@@ -16,6 +16,7 @@ class MidasNavigation(BasicNavigation):
         self.config = midas_config
         self.pos_name = self.config["pos_name"]
         self.executable_path = self.config["executable"]
+        self.working_directory = self.config["working_directory"]
         self.running_program_title = self.config["running_program_title"]
         self.main_window_title = self.config["main_window_title"]
 

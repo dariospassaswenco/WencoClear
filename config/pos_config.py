@@ -1,9 +1,10 @@
-from .app_settings import NAVEX_EXECUTABLE, ROWRITER_EXECUTABLE, RO_PASSWORD, NAVEX_USERNAME, NAVEX_PASSWORD
+from .app_settings import NAVEX, ROWRITER, RO_PASSWORD, NAVEX_USERNAME, NAVEX_PASSWORD, ROWRITER_WORKING_DIR, NAVEX_WORKING_DIR
 
 # Configuration for Midas POS system
 midas_config = {
     "pos_name": "RO Writer",
-    "executable": ROWRITER_EXECUTABLE,
+    "working_directory": ROWRITER_WORKING_DIR,
+    "executable": ROWRITER,
     "running_program_title": "rowriter",
     "password": RO_PASSWORD,
     "login_window_title": "R.O. Writer Central Service",
@@ -17,7 +18,8 @@ midas_config = {
 # Configuration for Bigo POS system
 bigo_config = {
     "pos_name": "Navex",
-    "executable": NAVEX_EXECUTABLE,
+    "working_directory": NAVEX_WORKING_DIR,
+    "executable": NAVEX,
     "running_program_title": "homoff.exe",
     "username": NAVEX_USERNAME,
     "password": NAVEX_PASSWORD,

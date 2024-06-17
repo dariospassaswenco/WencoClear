@@ -24,8 +24,12 @@ else:
     print(f"The database file {CLEAR_DATABASE_PATH} does not exist.")
 
 # App Executables
-ROWRITER_EXECUTABLE = config['EXECUTABLES']['ROWriter']
-NAVEX_EXECUTABLE = config['EXECUTABLES']['Navex']
+ROWRITER = config['EXECUTABLES']['ROWriter']
+NAVEX = config['EXECUTABLES']['Navex']
+
+# Working Directories (Needed to launch Navex)
+ROWRITER_WORKING_DIR = config['EXECUTABLES']['ROWriter_working_dir']
+NAVEX_WORKING_DIR = ['EXECUTABLES']['Navex_working_dir']
 
 # Credentials
 RO_PASSWORD=os.getenv('RO_PASSWORD')
