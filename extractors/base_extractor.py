@@ -1,3 +1,4 @@
+#extractors/base_extractor
 import os
 import shutil
 from config.app_settings import (
@@ -29,6 +30,7 @@ class ReportExtractor:
                     df = extractor.process_file(os.path.join(self.folder_path, file_name))
                     if df is not None and not df.empty:
                         cleaned_df = extractor.clean_data_frame(df)
+                        self.delete_existing_records(cleaned_df, report_type)
                         extractor.store_data_frame(cleaned_df)
                         extractor.move_processed_file(file_name)
                 else:
@@ -60,3 +62,6 @@ class ReportExtractor:
         destination_path = os.path.join(self.destination_directory, file_name)
         shutil.move(source_path, destination_path)
         print(f"Moved: {file_name} to {self.destination_directory}")
+
+    def delete_existing_records(self, df, report_type):
+        raise NotImplementedError("This method should be implemented by subclasses.")

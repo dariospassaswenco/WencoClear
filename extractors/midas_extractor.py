@@ -1,3 +1,4 @@
+#extractors/midas_extractor
 from .base_extractor import ReportExtractor
 from .midas_sales_summary_extractor import MidasSalesSummaryExtractor
 from .midas_tech_extractor import MidasTechExtractor
@@ -38,3 +39,11 @@ class MidasExtractor(ReportExtractor):
         else:
             print(f"Unknown report type for file: {file_path}")
             return None
+
+    def delete_existing_records(self, df, report_type):
+        if report_type == 'ss':
+            MidasSalesSummaryExtractor.delete_existing_records(df)
+        elif report_type == 'timesheet':
+            MidasTimesheetExtractor.delete_existing_records(df)
+        elif report_type == 'tech':
+            MidasTechExtractor.delete_existing_records(df)

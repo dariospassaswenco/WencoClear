@@ -37,3 +37,11 @@ class BigoExtractor(ReportExtractor):
         else:
             print(f"Unknown report type for file: {file_path}")
             return None
+
+    def delete_existing_records(self, df, report_type):
+        if report_type == 'ss':
+            BigoSalesSummaryExtractor.delete_existing_records(df)
+        elif report_type == 'timesheet':
+            BigoTimesheetExtractor.delete_existing_records(df)
+        elif report_type == 'tech':
+            BigoTechExtractor.delete_existing_records(df)

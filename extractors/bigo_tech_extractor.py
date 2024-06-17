@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from datetime import datetime
 from data_models.bigo import BigoTechSummary
+from config.app_settings import ENGINE, BIGO_TECH_TABLE
 
 class BigoTechExtractor:
     @staticmethod
@@ -105,3 +106,11 @@ class BigoTechExtractor:
         except Exception as e:
             print(f"Error processing file {file_path}: {e}")
             return pd.DataFrame()
+
+    @staticmethod
+    def delete_existing_records(df):
+        with ENGINE.connect() as conn:
+            for _, row in df.iterrows():
+                query = text(f"DELETE FROM {BIGO_TECH_TABLE} WHERE last_name = :last_name AND date = :date")
+                conn.execute(query, {'last_name': row['last_name'], 'date': row['date']})
+                print(f"Deleted existing record for last_name {row['last_name']} and date {row['date']}")

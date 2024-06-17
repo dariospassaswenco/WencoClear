@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from config.app_settings import BIGO_POS_CTRL_MAP, OUTPUTS
 from data_models.bigo import BigoTimesheet
+from config.app_settings import ENGINE, BIGO_TIMESHEET_TABLE
 
 
 class BigoTimesheetExtractor:
@@ -81,6 +82,24 @@ class BigoTimesheetExtractor:
             print(f"Error processing file: {e}")
             return pd.DataFrame()
 
+    @staticmethod
+    def delete_existing_records(df):
+        with ENGINE.connect() as conn:
+            for _, row in df.iterrows():
+                query = text(
+                    f"SELECT date_entered FROM {BIGO_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
+                result = conn.execute(query, {'wenco_id': row['wenco_id'], 'last_name': row['last_name'],
+                                              'date': row['date']}).fetchone()
+                if result:
+                    existing_date_entered = datetime.strptime(result['date_entered'], '%Y-%m-%d')
+                    new_date_entered = datetime.strptime(row['date_entered'], '%Y-%m-%d')
+                    if new_date_entered > existing_date_entered:
+                        delete_query = text(
+                            f"DELETE FROM {BIGO_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
+                        conn.execute(delete_query,
+                                     {'wenco_id': row['wenco_id'], 'last_name': row['last_name'], 'date': row['date']})
+                        print(
+                            f"Deleted existing record for wenco_id {row['wenco_id']}, last_name {row['last_name']} and date {row['date']}")
 
 if __name__ == '__main__':
     # Test the extraction with a sample file path

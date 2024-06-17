@@ -1,8 +1,10 @@
+#extractors/midas_sales_summary_extractor
 import re
 import pdfplumber
 import pandas as pd
 from datetime import datetime
 from data_models.midas import MidasSalesSummary
+from config.app_settings import *
 import os
 
 class MidasSalesSummaryExtractor:
@@ -127,3 +129,11 @@ class MidasSalesSummaryExtractor:
         except Exception as e:
             print(f"Error processing file {file_path}: {e}")
             return pd.DataFrame()
+
+    @staticmethod
+    def delete_existing_records(df):
+        with ENGINE.connect() as conn:
+            for _, row in df.iterrows():
+                query = text(f"DELETE FROM {MIDAS_SS_TABLE} WHERE wenco_id = :wenco_id AND date = :date")
+                conn.execute(query, {'wenco_id': row['wenco_id'], 'date': row['date']})
+                print(f"Deleted existing record for wenco_id {row['wenco_id']} and date {row['date']}")
