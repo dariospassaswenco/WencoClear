@@ -10,6 +10,16 @@ class MidasReportActions(ReportActions):
         self.config = config
         self.app = app
 
+    def perform_action_with_retry(self, action, retries=3, delay=2):
+        for attempt in range(retries):
+            try:
+                action()
+                return
+            except Exception as e:
+                print(f"Error performing action: {e}. Retrying ({attempt + 1}/{retries})...")
+                time.sleep(delay)
+        print("Failed to perform action after multiple retries.")
+
     def select_initial_store(self):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
@@ -30,7 +40,6 @@ class MidasReportActions(ReportActions):
             shop.click_input()
             print(f"Store {store_name} Selected")
         self.perform_action_with_retry(action)
-
 
     def enter_password(self):
         def type_password():
@@ -100,7 +109,6 @@ class MidasReportActions(ReportActions):
             ok_button.click_input()
         self.perform_action_with_retry(action)
 
-
     def enter_date_range(self, start_date, end_date):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
@@ -116,6 +124,7 @@ class MidasReportActions(ReportActions):
             end_date_field.type_keys(end_date)
             print("Date Range Entered")
         self.perform_action_with_retry(action)
+
     def select_generate_report(self):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
@@ -182,7 +191,6 @@ class MidasReportActions(ReportActions):
                 time.sleep(1)
             else:
                 break
-
 
     def cleanup_and_close(self):
         def action():
