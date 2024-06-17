@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 from data_models.midas import MidasTechSummary
 from config.app_settings import MIDAS_ADDRESS_MAP, ENGINE, MIDAS_TECH_TABLE
+from sqlalchemy import text
 
 
 class MidasTechExtractor:

@@ -4,6 +4,7 @@ from datetime import datetime
 from config.app_settings import BIGO_POS_CTRL_MAP, OUTPUTS
 from data_models.bigo import BigoTimesheet
 from config.app_settings import ENGINE, BIGO_TIMESHEET_TABLE
+from sqlalchemy import text
 
 
 class BigoTimesheetExtractor:

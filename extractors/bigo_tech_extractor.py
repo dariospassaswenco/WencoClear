@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from data_models.bigo import BigoTechSummary
 from config.app_settings import ENGINE, BIGO_TECH_TABLE
+from sqlalchemy import text
 
 class BigoTechExtractor:
     @staticmethod

@@ -7,6 +7,8 @@ from collections import namedtuple
 from config.app_settings import MIDAS_ADDRESS_MAP, OUTPUTS
 from data_models.midas import MidasTimesheet
 from config.app_settings import ENGINE, MIDAS_TIMESHEET_TABLE
+from sqlalchemy import text
+
 class MidasTimesheetExtractor:
     @staticmethod
     def extract_lines(file_path):

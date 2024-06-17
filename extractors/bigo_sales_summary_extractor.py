@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from data_models.bigo import BigoSalesSummary
 from config.app_settings import ENGINE, BIGO_SS_TABLE
+from sqlalchemy import text
 
 
 class BigoSalesSummaryExtractor:

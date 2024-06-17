@@ -6,6 +6,7 @@ from datetime import datetime
 from data_models.midas import MidasSalesSummary
 from config.app_settings import *
 import os
+from sqlalchemy import text
 
 class MidasSalesSummaryExtractor:
     @staticmethod
