@@ -134,6 +134,12 @@ class MidasSalesSummaryExtractor:
     def delete_existing_records(df):
         with ENGINE.connect() as conn:
             for _, row in df.iterrows():
-                query = text(f"DELETE FROM {MIDAS_SS_TABLE} WHERE wenco_id = :wenco_id AND date = :date")
-                conn.execute(query, {'wenco_id': row['wenco_id'], 'date': row['date']})
-                print(f"Deleted existing record for wenco_id {row['wenco_id']} and date {row['date']}")
+                # Check if the record exists
+                check_query = text(f"SELECT COUNT(*) FROM {MIDAS_SS_TABLE} WHERE wenco_id = :wenco_id AND date = :date")
+                result = conn.execute(check_query, {'wenco_id': row['wenco_id'], 'date': row['date']}).scalar()
+
+                if result > 0:
+                    # If the record exists, delete it
+                    delete_query = text(f"DELETE FROM {MIDAS_SS_TABLE} WHERE wenco_id = :wenco_id AND date = :date")
+                    conn.execute(delete_query, {'wenco_id': row['wenco_id'], 'date': row['date']})
+                    print(f"Deleted existing record for wenco_id {row['wenco_id']} and date {row['date']}")

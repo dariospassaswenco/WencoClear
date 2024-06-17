@@ -76,10 +76,11 @@ class MidasTimesheetExtractor:
     def delete_existing_records(df):
         with ENGINE.connect() as conn:
             for _, row in df.iterrows():
-                query = text(
+                # Check if the record exists and get the date_entered value
+                check_query = text(
                     f"SELECT date_entered FROM {MIDAS_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
-                result = conn.execute(query, {'wenco_id': row['wenco_id'], 'last_name': row['last_name'],
-                                              'date': row['date']}).fetchone()
+                result = conn.execute(check_query, {'wenco_id': row['wenco_id'], 'last_name': row['last_name'],
+                                                    'date': row['date']}).fetchone()
                 if result:
                     existing_date_entered = datetime.strptime(result['date_entered'], '%Y-%m-%d')
                     new_date_entered = datetime.strptime(row['date_entered'], '%Y-%m-%d')
@@ -90,6 +91,8 @@ class MidasTimesheetExtractor:
                                      {'wenco_id': row['wenco_id'], 'last_name': row['last_name'], 'date': row['date']})
                         print(
                             f"Deleted existing record for wenco_id {row['wenco_id']}, last_name {row['last_name']} and date {row['date']}")
+
+
 if __name__ == '__main__':
     # Test the extraction with a sample file path
     sample_file_path = os.path.join(OUTPUTS, 'mid_2_ts_2024-03-03.pdf')
