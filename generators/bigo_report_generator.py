@@ -49,19 +49,14 @@ class BigoReportGenerator(ReportGenerator):
             else:
                 print(f"Failed to generate SS reports after retrying: {e}")
 
-    def generate_timesheet_reports(self, missing_dates_per_store, retry=False):
+    def generate_timesheet_reports(self, missing_dates, retry=False):
         try:
-            unique_weeks = set()
-            for weeks in missing_dates_per_store.values():
-                unique_weeks.update(weeks)
-            end_dates = [datetime.strptime(pair[1], '%Y-%m-%d') for pair in unique_weeks]
             self.actions.select_report(self.config["timesheet_report_title"])
-            for end_date in end_dates:
-                end_date_str = end_date.strftime('%Y-%m-%d')
-                start_date = end_date - timedelta(days=7)
+            for date_range in missing_dates:
+                start_date_str, end_date_str = date_range
                 file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
-                pos_formatted_start_date = start_date.strftime('%m%d%Y')
-                pos_formatted_end_date = end_date.strftime('%m%d%Y')
+                pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+                pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
                 self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
                 self.actions.select_generate_report()  # Click excel button
                 self.actions.enter_file_destination()
@@ -75,7 +70,7 @@ class BigoReportGenerator(ReportGenerator):
             if not retry:
                 print(f"Error generating Timesheet reports: {e}. Retrying...")
                 self.restart_pos()
-                self.generate_timesheet_reports(missing_dates_per_store, retry=True)
+                self.generate_timesheet_reports(missing_dates, retry=True)
             else:
                 print(f"Failed to generate Timesheet reports after retrying: {e}")
 

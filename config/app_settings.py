@@ -29,7 +29,7 @@ NAVEX = config['EXECUTABLES']['Navex']
 
 # Working Directories (Needed to launch Navex)
 ROWRITER_WORKING_DIR = config['EXECUTABLES']['ROWriter_working_dir']
-NAVEX_WORKING_DIR = ['EXECUTABLES']['Navex_working_dir']
+NAVEX_WORKING_DIR = config['EXECUTABLES']['Navex_working_dir']
 
 # Credentials
 RO_PASSWORD=os.getenv('RO_PASSWORD')
