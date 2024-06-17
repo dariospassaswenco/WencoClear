@@ -4,13 +4,13 @@ from generators.base_report_generator import ReportGenerator
 from navigation.navex_report_navigation import BigoReportActions
 from navigation.navex_basic_navigation import BigoNavigation
 from config.pos_config import bigo_config
-from config.app_settings import BIGO_STORE_NUMBERS, BIGO_FILENAME_PATTERN
+from config.app_settings import *
 
 class BigoReportGenerator(ReportGenerator):
     def __init__(self):
         super().__init__()
         self.config = bigo_config
-        self.stores = BIGO_STORE_NUMBERS
+        self.stores = BIGO_POS_CTRL_MAP
         self.app = None
         self.actions = None
 

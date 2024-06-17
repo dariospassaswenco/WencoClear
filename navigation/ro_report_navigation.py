@@ -1,12 +1,12 @@
 from .base_reports_navigation import ReportActions
 import time
 from pywinauto.application import Application
-from config.app_settings import MIDAS_STORE_NUMBERS
+from config.app_settings import *
 
 class MidasReportActions(ReportActions):
     def __init__(self, app, config):
         super().__init__()
-        self.stores = MIDAS_STORE_NUMBERS
+        self.stores = MIDAS_POS_CTRL_MAP
         self.config = config
         self.app = app
 
