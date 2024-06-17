@@ -30,7 +30,7 @@ class ReportExtractor:
                     df = extractor.process_file(os.path.join(self.folder_path, file_name))
                     if df is not None and not df.empty:
                         cleaned_df = extractor.clean_data_frame(df)
-                        self.delete_existing_records(cleaned_df, report_type)
+                        extractor.delete_existing_records(cleaned_df, report_type)
                         extractor.store_data_frame(cleaned_df)
                         extractor.move_processed_file(file_name)
                 else:
