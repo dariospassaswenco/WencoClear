@@ -10,7 +10,6 @@ class BasicNavigation:
     def __init__(self):
         self.config = None
         self.pos_name = None
-        self.working_directory = None
         self.executable_path = None
         self.running_program_title = None
         self.main_window_title = None
@@ -40,7 +39,6 @@ class BasicNavigation:
 
     def launchPOS(self):
         try:
-            os.chdir(self.working_directory)
             subprocess.Popen(self.executable_path)
             print(f"Launching {self.pos_name}")
         except FileNotFoundError:

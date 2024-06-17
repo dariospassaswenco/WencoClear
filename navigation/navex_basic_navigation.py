@@ -1,6 +1,5 @@
 from .base_basic_navigation import BasicNavigation
 from config.pos_config import bigo_config
-# from config.app_settings import RO_WORKING_DIRECTORY, NAVEX_WORKING_DIRECTORY
 from pywinauto.application import Application
 from pywinauto.keyboard import SendKeys
 import time
