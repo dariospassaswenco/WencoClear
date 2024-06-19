@@ -4,7 +4,10 @@ from generators.base_report_generator import ReportGenerator
 from navigation.ro_report_navigation import MidasReportActions
 from navigation.ro_basic_navigation import MidasNavigation
 from config.pos_config import midas_config
-from config.app_settings import MIDAS_STORE_NUMBERS, MIDAS_FILENAME_PATTERN
+from config.app_settings import *
+from database.ss_data import get_missing_ss_dates
+from database.tech_data import get_missing_midas_tech_dates
+from database.timesheet_data import get_missing_timesheet_dates
 
 class MidasReportGenerator(ReportGenerator):
     def __init__(self):
@@ -46,8 +49,10 @@ class MidasReportGenerator(ReportGenerator):
         except Exception as e:
             if not retry:
                 print(f"Error generating SS reports: {e}. Retrying...")
+                remaining_dates = get_missing_ss_dates(datetime.strptime(date, '%Y-%m-%d'), datetime.today(),
+                                                       {store_number: store_number}, MIDAS_SS_TABLE)
                 self.restart_pos()
-                self.generate_ss_reports(missing_dates_per_store, retry=True)
+                self.generate_ss_reports(remaining_dates, retry=True)
             else:
                 print(f"Failed to generate SS reports after retrying: {e}")
 
@@ -76,7 +81,7 @@ class MidasReportGenerator(ReportGenerator):
             if not retry:
                 print(f"Error generating Timesheet reports: {e}. Retrying...")
                 self.restart_pos()
-                self.generate_timesheet_reports(missing_dates_per_store, retry=True)
+                self.generate_ss_reports(missing_dates_per_store, retry=True)
             else:
                 print(f"Failed to generate Timesheet reports after retrying: {e}")
 
@@ -86,10 +91,10 @@ class MidasReportGenerator(ReportGenerator):
             self.actions.select_initial_store()
             for store_number, missing_dates in missing_dates_per_store.items():
                 self.actions.select_current_store(store_number)
-                for start_date_str, end_date_str in missing_dates:
-                    start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-                    file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='tech', date=end_date_str)
+                for date_str in missing_dates:
+                    start_date = datetime.strptime(date_str, '%Y-%m-%d')
+                    end_date = datetime.strptime(date_str, '%Y-%m-%d')
+                    file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='tech', date=date_str)
                     pos_formatted_start_date = start_date.strftime('%m%d%Y')
                     pos_formatted_end_date = end_date.strftime('%m%d%Y')
                     self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
@@ -104,7 +109,9 @@ class MidasReportGenerator(ReportGenerator):
         except Exception as e:
             if not retry:
                 print(f"Error generating Tech reports: {e}. Retrying...")
+                remaining_dates = get_missing_timesheet_dates(datetime.strptime(date, '%Y-%m-%d'), datetime.today(),
+                                                       {store_number: store_number}, MIDAS_TIMESHEET_TABLE)
                 self.restart_pos()
-                self.generate_tech_reports(missing_dates_per_store, retry=True)
+                self.generate_ss_reports(remaining_dates, retry=True)
             else:
                 print(f"Failed to generate Tech reports after retrying: {e}")

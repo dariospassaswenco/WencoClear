@@ -1,8 +1,10 @@
+# views/data_checkup_view/data_checkup_view.py
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget, QProgressDialog
 from .helpers import run_data_checkup
 from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, fetch_missing_timesheet_data
 from .display_functions import display_data, display_tech_data, display_timesheet_data
+from .progress_dialog import ProgressDialog
 
 class DataCheckupView(QWidget):
     def __init__(self, stacked_widget, parent=None):
@@ -90,12 +92,16 @@ class DataCheckupView(QWidget):
         run_data_checkup(self, report_type)
 
     def fetch_all_missing_data(self):
-        fetch_all_missing_data(self)
+        progress_dialog = ProgressDialog(self)
+        progress_dialog.show()
+        fetch_all_missing_data(self, progress_dialog)
 
     def fetch_missing_data(self, report_type):
+        progress_dialog = ProgressDialog(self)
+        progress_dialog.show()
         if report_type == "Sales Summary":
-            fetch_missing_ss_data(self)
+            fetch_missing_ss_data(self, progress_dialog)
         elif report_type == "Tech Data":
-            fetch_missing_tech_data(self)
+            fetch_missing_tech_data(self, progress_dialog)
         elif report_type == "Timesheet Data":
-            fetch_missing_timesheet_data(self)
+            fetch_missing_timesheet_data(self, progress_dialog)

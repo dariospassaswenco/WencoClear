@@ -1,3 +1,4 @@
+# app.py
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget, QVBoxLayout
 from views.main_menu import MainMenu

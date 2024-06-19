@@ -5,6 +5,8 @@ from navigation.navex_report_navigation import BigoReportActions
 from navigation.navex_basic_navigation import BigoNavigation
 from config.pos_config import bigo_config
 from config.app_settings import *
+from database.ss_data import get_missing_ss_dates
+from database.tech_data import get_missing_bigo_tech_dates
 
 class BigoReportGenerator(ReportGenerator):
     def __init__(self):
@@ -44,8 +46,10 @@ class BigoReportGenerator(ReportGenerator):
         except Exception as e:
             if not retry:
                 print(f"Error generating SS reports: {e}. Retrying...")
+                remaining_dates = get_missing_ss_dates(datetime.strptime(date, '%Y-%m-%d'), datetime.today(),
+                                                       {store_number: store_number}, BIGO_SS_TABLE)
                 self.restart_pos()
-                self.generate_ss_reports(missing_dates_per_store, retry=True)
+                self.generate_ss_reports(remaining_dates, retry=True)
             else:
                 print(f"Failed to generate SS reports after retrying: {e}")
 
@@ -77,8 +81,9 @@ class BigoReportGenerator(ReportGenerator):
     def generate_tech_reports(self, missing_dates, retry=False):
         try:
             self.actions.select_report(self.config["tech_report_title"])
-            for date_range in missing_dates:
-                start_date_str, end_date_str = date_range
+            for date_str in missing_dates:
+                start_date_str = date_str
+                end_date_str = date_str
                 file_name = BIGO_FILENAME_PATTERN.format(store_number="TECH", report_type='tech', date=end_date_str)
                 pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
                 pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
@@ -94,7 +99,8 @@ class BigoReportGenerator(ReportGenerator):
         except Exception as e:
             if not retry:
                 print(f"Error generating Tech reports: {e}. Retrying...")
+                remaining_dates = get_missing_bigo_tech_dates(start_date_str, end_date_str, 'bigo_tech_summary')
                 self.restart_pos()
-                self.generate_tech_reports(missing_dates, retry=True)
+                self.generate_tech_reports(remaining_dates, retry=True)
             else:
                 print(f"Failed to generate Tech reports after retrying: {e}")
