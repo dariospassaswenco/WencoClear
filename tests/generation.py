@@ -7,7 +7,7 @@ def test_midas_reports():
     print("Testing Midas Reports")
 
     # Generate future dates
-    test_date = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    test_date = (datetime.today() - timedelta(days=3)).strftime('%Y-%m-%d')
 
     # Limit to the first three Midas stores
     limited_midas_store_numbers = {store: MIDAS_STORE_NUMBERS[store] for store in list(MIDAS_STORE_NUMBERS)[:3]}

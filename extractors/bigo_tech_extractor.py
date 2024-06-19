@@ -110,15 +110,10 @@ class BigoTechExtractor:
 
     @staticmethod
     def delete_existing_records(df):
-        with ENGINE.connect() as conn:
+        with ENGINE.begin() as conn:
             for _, row in df.iterrows():
-                # Check if the record exists
-                check_query = text(
-                    f"SELECT COUNT(*) FROM {BIGO_TECH_TABLE} WHERE last_name = :last_name AND date = :date")
-                result = conn.execute(check_query, {'last_name': row['last_name'], 'date': row['date']}).scalar()
-
-                if result > 0:
-                    # If the record exists, delete it
-                    delete_query = text(f"DELETE FROM {BIGO_TECH_TABLE} WHERE last_name = :last_name AND date = :date")
-                    conn.execute(delete_query, {'last_name': row['last_name'], 'date': row['date']})
-                    print(f"Deleted existing record for last_name {row['last_name']} and date {row['date']}")
+                query = text(f"DELETE FROM {BIGO_TECH_TABLE} WHERE date = :date AND last_name = :last_name")
+                result = conn.execute(query, {'date': row['date'], 'last_name': row['last_name']})
+                print(
+                    f"Query executed: DELETE FROM {BIGO_TECH_TABLE} WHERE date = :date AND last_name = :last_name with params date={row['date']} and last_name={row['last_name']}")
+                print(f"Number of rows deleted: {result.rowcount}")

@@ -76,23 +76,32 @@ class MidasTimesheetExtractor:
 
     @staticmethod
     def delete_existing_records(df):
-        with ENGINE.connect() as conn:
+        with ENGINE.begin() as conn:
             for _, row in df.iterrows():
-                # Check if the record exists and get the date_entered value
-                check_query = text(
+                query = text(
                     f"SELECT date_entered FROM {MIDAS_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
-                result = conn.execute(check_query, {'wenco_id': row['wenco_id'], 'last_name': row['last_name'],
-                                                    'date': row['date']}).fetchone()
+                result = conn.execute(query, {'wenco_id': row['wenco_id'], 'last_name': row['last_name'],
+                                              'date': row['date']}).fetchone()
+                print(
+                    f"Query executed: {query} with params wenco_id={row['wenco_id']}, last_name={row['last_name']}, date={row['date']}")
                 if result:
-                    existing_date_entered = datetime.strptime(result['date_entered'], '%Y-%m-%d')
-                    new_date_entered = datetime.strptime(row['date_entered'], '%Y-%m-%d')
+                    existing_date_entered = datetime.strptime(result[0], '%Y-%m-%d')
+                    new_date_entered = datetime.strptime('2024-06-15', '%Y-%m-%d')
                     if new_date_entered > existing_date_entered:
                         delete_query = text(
                             f"DELETE FROM {MIDAS_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
-                        conn.execute(delete_query,
-                                     {'wenco_id': row['wenco_id'], 'last_name': row['last_name'], 'date': row['date']})
+                        delete_result = conn.execute(delete_query,
+                                                     {'wenco_id': row['wenco_id'], 'last_name': row['last_name'],
+                                                      'date': row['date']})
                         print(
                             f"Deleted existing record for wenco_id {row['wenco_id']}, last_name {row['last_name']} and date {row['date']}")
+                        print(f"Number of rows deleted: {delete_result.rowcount}")
+                    else:
+                        print(
+                            f"No deletion needed: new_date_entered ({new_date_entered}) is not greater than existing_date_entered ({existing_date_entered})")
+                else:
+                    print(
+                        f"No matching record found for wenco_id={row['wenco_id']}, last_name={row['last_name']}, date={row['date']}")
 
 
 if __name__ == '__main__':
