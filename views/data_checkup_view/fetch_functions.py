@@ -13,7 +13,7 @@ def fetch_all_missing_data(view):
         print("Fetching Midas Data")
         ss_midas = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
         tech_midas = get_missing_midas_tech_dates(start_date, end_date, MIDAS_STORE_NUMBERS, 'midas_tech_summary')
-        timesheet_midas = get_missing_timesheet_dates(start_date, end_date, 'midas_timesheet', MIDAS_STORE_NUMBERS)
+        timesheet_midas = {(start_date, end_date)}
         print(f"Midas Sales Summary: {ss_midas}")
         print(f"Midas Tech Data: {tech_midas}")
         print(f"Midas Timesheet Data: {timesheet_midas}")
@@ -23,7 +23,7 @@ def fetch_all_missing_data(view):
         print("Fetching Bigo Data")
         ss_bigo = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
         tech_bigo = get_missing_bigo_tech_dates(start_date, end_date, 'bigo_tech_summary')
-        timesheet_bigo = get_missing_timesheet_dates(start_date, end_date, 'bigo_timesheet', BIGO_STORE_NUMBERS)
+        timesheet_bigo = {(start_date, end_date)}
         print(f"Bigo Sales Summary: {ss_bigo}")
         print(f"Bigo Tech Data: {tech_bigo}")
         print(f"Bigo Timesheet Data: {timesheet_bigo}")
@@ -72,13 +72,13 @@ def fetch_missing_timesheet_data(view):
 
     if store_type == "All" or store_type == "Midas":
         print("Fetching Midas Timesheet Data")
-        timesheet_midas = get_missing_timesheet_dates(start_date, end_date, 'midas_timesheet', MIDAS_STORE_NUMBERS)
+        timesheet_midas = {(start_date, end_date)}
         generate_midas_reports(None, None, timesheet_midas)
         print("Midas Timesheet Data:", timesheet_midas)
 
     if store_type == "All" or store_type == "Bigo":
         print("Fetching Bigo Timesheet Data")
-        timesheet_bigo = get_missing_timesheet_dates(start_date, end_date, 'bigo_timesheet', BIGO_STORE_NUMBERS)
+        timesheet_bigo = {(start_date, end_date)}
         generate_bigo_reports(None, None, timesheet_bigo)
         print("Bigo Timesheet Data:", timesheet_bigo)
 

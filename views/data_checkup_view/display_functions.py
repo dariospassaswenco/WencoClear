@@ -8,7 +8,13 @@ import traceback
 def transform_missing_dates_to_df(missing_data, start_date, end_date):
     date_range = pd.date_range(start=start_date, end=end_date)
     columns = [date.strftime('%Y-%m-%d') for date in date_range]
-    df = pd.DataFrame(index=missing_data.keys(), columns=columns)
+
+    # Include all stores and initialize them with 'Present'
+    all_stores = set(missing_data.keys())
+    for store, dates in missing_data.items():
+        all_stores.update(store)
+
+    df = pd.DataFrame(index=all_stores, columns=columns)
     df = df.fillna('Present')
 
     for store, dates in missing_data.items():
@@ -17,6 +23,7 @@ def transform_missing_dates_to_df(missing_data, start_date, end_date):
                 df.at[store, date] = 'Missing'
 
     return df
+
 
 def display_data(view, missing_data, start_date, end_date, results_table):
     try:
@@ -138,6 +145,12 @@ def display_all_data(view, combined_results, start_date, end_date, results_table
         columns = [date.strftime('%Y-%m-%d') for date in pd.date_range(start=start_date, end=end_date)]
         df = pd.DataFrame.from_dict(combined_results, orient='index', columns=columns)
 
+        # Ensure all dates and stores are represented
+        for col in columns:
+            if col not in df.columns:
+                df[col] = 'All Present'
+        df = df.fillna('All Present')
+
         columns_with_days = []
         for col in df.columns:
             date = datetime.strptime(col, '%Y-%m-%d')
@@ -167,6 +180,7 @@ def display_all_data(view, combined_results, start_date, end_date, results_table
     except Exception as e:
         print(f"Error displaying all data: {e}")
         traceback.print_exc()
+
 
 def combine_all_results(midas_ss, bigo_ss, midas_tech, bigo_tech, midas_timesheet, bigo_timesheet, start_date,
                         end_date):
