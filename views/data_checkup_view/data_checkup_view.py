@@ -1,10 +1,10 @@
-# views/data_checkup_view/data_checkup_view.py
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget, QProgressDialog
+from PyQt5.QtGui import QTextCharFormat
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget
 from .helpers import run_data_checkup
 from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, fetch_missing_timesheet_data
 from .display_functions import display_data, display_tech_data, display_timesheet_data
-from .progress_dialog import ProgressDialog
+from config.app_settings import CLOSED_DAYS
 
 class DataCheckupView(QWidget):
     def __init__(self, stacked_widget, parent=None):
@@ -27,15 +27,16 @@ class DataCheckupView(QWidget):
 
         # Date range input
         date_layout = QHBoxLayout()
-        self.start_date_edit = QDateEdit()
-        self.end_date_edit = QDateEdit()
-        self.start_date_edit.setDate(QDate.currentDate().addDays(-7))
-        self.end_date_edit.setDate(QDate.currentDate())
+        self.start_date_edit = self.create_date_edit()
+        self.end_date_edit = self.create_date_edit()
         date_layout.addWidget(QLabel("Start Date:"))
         date_layout.addWidget(self.start_date_edit)
         date_layout.addWidget(QLabel("End Date:"))
         date_layout.addWidget(self.end_date_edit)
         layout.addLayout(date_layout)
+
+        # Set default week range
+        self.set_default_week_range()
 
         # Fetch all missing button
         fetch_all_missing_button = QPushButton("Fetch All Missing Data")
@@ -62,6 +63,39 @@ class DataCheckupView(QWidget):
         layout.addWidget(self.tab_widget)
 
         self.setLayout(layout)
+
+        self.update_calendar()
+
+    def create_date_edit(self):
+        date_edit = QDateEdit()
+        date_edit.setDate(QDate.currentDate())
+        date_edit.setCalendarPopup(True)
+        return date_edit
+
+    def set_default_week_range(self):
+        today = QDate.currentDate()
+        start_of_week = today.addDays(-(today.dayOfWeek() - 1))  # Monday
+        end_of_week = start_of_week.addDays(6)  # Sunday
+        self.start_date_edit.setDate(start_of_week)
+        self.end_date_edit.setDate(end_of_week)
+
+    def update_calendar(self):
+        for date_edit in [self.start_date_edit, self.end_date_edit]:
+            calendar_widget = date_edit.calendarWidget()
+            for closed_day in CLOSED_DAYS:
+                qdate = QDate.fromString(closed_day, 'yyyy-MM-dd')
+                calendar_widget.setDateTextFormat(qdate, self.create_format(Qt.black))
+
+            # Gray out Sundays
+            for day in range(1, 32):  # Assuming max 31 days in a month
+                date = QDate(date_edit.date().year(), date_edit.date().month(), day)
+                if date.dayOfWeek() == Qt.Sunday:
+                    calendar_widget.setDateTextFormat(date, self.create_format(Qt.gray))
+
+    def create_format(self, color):
+        format = QTextCharFormat()
+        format.setForeground(color)
+        return format
 
     def create_report_tab(self, report_type):
         widget = QWidget()
@@ -92,16 +126,12 @@ class DataCheckupView(QWidget):
         run_data_checkup(self, report_type)
 
     def fetch_all_missing_data(self):
-        progress_dialog = ProgressDialog(self)
-        progress_dialog.show()
-        fetch_all_missing_data(self, progress_dialog)
+        fetch_all_missing_data(self)
 
     def fetch_missing_data(self, report_type):
-        progress_dialog = ProgressDialog(self)
-        progress_dialog.show()
         if report_type == "Sales Summary":
-            fetch_missing_ss_data(self, progress_dialog)
+            fetch_missing_ss_data(self)
         elif report_type == "Tech Data":
-            fetch_missing_tech_data(self, progress_dialog)
+            fetch_missing_tech_data(self)
         elif report_type == "Timesheet Data":
-            fetch_missing_timesheet_data(self, progress_dialog)
+            fetch_missing_timesheet_data(self)

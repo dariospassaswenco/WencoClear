@@ -1,7 +1,7 @@
 from generators.midas_report_generator import MidasReportGenerator
 from generators.bigo_report_generator import BigoReportGenerator
 
-def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, log_dialog):
+def generate_midas_reports(ss_midas, tech_midas, timesheet_midas):
     midas_generator = MidasReportGenerator()
     midas_generator.prepare_pos()
 
@@ -9,26 +9,26 @@ def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, log_dialog):
     if ss_midas:
         for store, dates in ss_midas.items():
             for date in dates:
-                log_dialog.log_message(f"Generating Sales Summary Report for store {store} on date {date}")
+                print(f"Generating Sales Summary Report for store {store} on date {date}")
                 midas_generator.generate_ss_reports({store: [date]})
 
     # Generate Tech Reports
     if tech_midas:
         for store, dates in tech_midas.items():
             for date in dates:
-                log_dialog.log_message(f"Generating Tech Report for store {store} on date {date}")
+                print(f"Generating Tech Report for store {store} on date {date}")
                 midas_generator.generate_tech_reports({store: [date]})
 
     # Generate Timesheet Reports
     if timesheet_midas:
         for store, date_range in timesheet_midas.items():
-            log_dialog.log_message(f"Generating Timesheet Report for store {store} from {date_range[0]} to {date_range[1]}")
+            print(f"Generating Timesheet Report for store {store} from {date_range[0]} to {date_range[1]}")
             midas_generator.generate_timesheet_reports({store: [date_range]})
 
     midas_generator.actions.app.kill()  # Close POS
-    log_dialog.log_message("Midas Reports Generated.")
+    print("Midas Reports Generated.")
 
-def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, log_dialog):
+def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo):
     bigo_generator = BigoReportGenerator()
     bigo_generator.prepare_pos()
 
@@ -36,21 +36,20 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, log_dialog):
     if ss_bigo:
         for store, dates in ss_bigo.items():
             for date in dates:
-                log_dialog.log_message(f"Generating Sales Summary Report for store {store} on date {date}")
+                print(f"Generating Sales Summary Report for store {store} on date {date}")
                 bigo_generator.generate_ss_reports({store: [date]})
 
     # Generate Tech Reports
     if tech_bigo:
-        for store, dates in tech_bigo.items():
-            for date in dates:
-                log_dialog.log_message(f"Generating Tech Report for store {store} on date {date}")
-                bigo_generator.generate_tech_reports({store: [date]})
+        for date in tech_bigo:
+            print(f"Generating Tech Report for date {date}")
+            bigo_generator.generate_tech_reports([{date: [date]}])
 
     # Generate Timesheet Reports
     if timesheet_bigo:
-        for store, date_range in timesheet_bigo.items():
-            log_dialog.log_message(f"Generating Timesheet Report for store {store} from {date_range[0]} to {date_range[1]}")
-            bigo_generator.generate_timesheet_reports({store: [date_range]})
+        for date_range in timesheet_bigo:
+            print(f"Generating Timesheet Report from {date_range[0]} to {date_range[1]}")
+            bigo_generator.generate_timesheet_reports([date_range])
 
     bigo_generator.actions.app.kill()  # Close POS
-    log_dialog.log_message("Bigo Reports Generated.")
+    print("Bigo Reports Generated.")
