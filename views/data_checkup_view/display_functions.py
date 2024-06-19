@@ -52,6 +52,39 @@ def display_data(view, missing_data, start_date, end_date, results_table):
 
 def display_tech_data(view, tech_data, start_date, end_date, results_table):
     try:
+        results_table.clear()  # Clear the table before adding new data
+
+        # Display Midas Tech Data
+        if "Midas" in tech_data:
+            midas_missing_dates = tech_data["Midas"]
+            df_midas = transform_missing_dates_to_df(midas_missing_dates, start_date, end_date)
+            columns = []
+            for col in df_midas.columns:
+                date = datetime.strptime(col, '%Y-%m-%d')
+                columns.append(f"{col}\n{date.strftime('%A')}")
+
+            results_table.setRowCount(len(df_midas))
+            results_table.setColumnCount(len(df_midas.columns))
+            results_table.setHorizontalHeaderLabels(columns)
+            results_table.setVerticalHeaderLabels(df_midas.index.astype(str).tolist())
+
+            for row in range(len(df_midas)):
+                for col in range(len(df_midas.columns)):
+                    item = QTableWidgetItem()
+                    item.setText("")
+                    date = datetime.strptime(df_midas.columns[col], '%Y-%m-%d')
+                    if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
+                        item.setBackground(Qt.black)
+                        item.setText("Closed")
+                    elif date.weekday() == 6:  # Sunday
+                        item.setBackground(Qt.gray)
+                    elif df_midas.iloc[row, col] == 'Missing':
+                        item.setBackground(Qt.red)
+                    else:
+                        item.setBackground(Qt.green)
+                    results_table.setItem(row, col, item)
+
+        # Display Bigo Tech Data
         if "Bigo" in tech_data:
             bigo_missing_dates = tech_data["Bigo"]
             df_bigo = pd.DataFrame(
@@ -60,41 +93,9 @@ def display_tech_data(view, tech_data, start_date, end_date, results_table):
             df_bigo.loc[0] = ['Missing' if date in bigo_missing_dates else 'Found' for date in df_bigo.columns]
             df_bigo.index = ["Bigo Tech Data"]
 
-        if "Midas" in tech_data:
-            midas_missing_dates = tech_data["Midas"]
-            df_midas = transform_missing_dates_to_df(midas_missing_dates, start_date, end_date)
-        else:
-            df_midas = pd.DataFrame()
-
-        columns = []
-        for col in df_midas.columns:
-            date = datetime.strptime(col, '%Y-%m-%d')
-            columns.append(f"{col}\n{date.strftime('%A')}")
-
-        results_table.setRowCount(len(df_midas))
-        results_table.setColumnCount(len(df_midas.columns))
-        results_table.setHorizontalHeaderLabels(columns)
-        results_table.setVerticalHeaderLabels(df_midas.index.astype(str).tolist())
-
-        for row in range(len(df_midas)):
-            for col in range(len(df_midas.columns)):
-                item = QTableWidgetItem()
-                item.setText("")
-                date = datetime.strptime(df_midas.columns[col], '%Y-%m-%d')
-                if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
-                    item.setBackground(Qt.black)
-                    item.setText("Closed")
-                elif date.weekday() == 6:  # Sunday
-                    item.setBackground(Qt.gray)
-                elif df_midas.iloc[row, col] == 'Missing':
-                    item.setBackground(Qt.red)
-                else:
-                    item.setBackground(Qt.green)
-                results_table.setItem(row, col, item)
-
-        if "Bigo" in tech_data:
-            # Adding Bigo tech data below the Midas data
-            results_table.insertRow(len(df_midas))
+            # Add Bigo data to the table below the Midas data
+            start_row = len(df_midas) if "Midas" in tech_data else 0
+            results_table.setRowCount(start_row + 1)
             for col in range(len(df_bigo.columns)):
                 item = QTableWidgetItem()
                 item.setText("")
@@ -108,25 +109,32 @@ def display_tech_data(view, tech_data, start_date, end_date, results_table):
                     item.setBackground(Qt.red)
                 else:
                     item.setBackground(Qt.green)
-                results_table.setItem(len(df_midas), col, item)
-            results_table.setVerticalHeaderItem(len(df_midas), QTableWidgetItem("Bigo Tech Data"))
+                results_table.setItem(start_row, col, item)
+            results_table.setVerticalHeaderItem(start_row, QTableWidgetItem("Bigo Tech Data"))
 
     except Exception as e:
         print(f"Error displaying tech data: {e}")
 
+
 def display_timesheet_data(view, timesheet_data, start_date, end_date, results_table):
     try:
-        # Here, timesheet_data is a list of (start_date, end_date) tuples for each store.
+        # Create a DataFrame for the date range
         date_range = pd.date_range(start=start_date, end=end_date)
         columns = [date.strftime('%Y-%m-%d') for date in date_range]
         df = pd.DataFrame(index=timesheet_data.keys(), columns=columns)
         df = df.fillna('Present')
 
+        # Mark 'Missing' for each date range in timesheet_data
         for store, date_ranges in timesheet_data.items():
             for date_range in date_ranges:
-                start, end = date_range
-                for date in pd.date_range(start=start, end=end):
-                    date_str = date.strftime('%Y-%m-%d')
+                if isinstance(date_range, tuple):
+                    start, end = date_range
+                    for date in pd.date_range(start=start, end=end):
+                        date_str = date.strftime('%Y-%m-%d')
+                        if date_str in df.columns:
+                            df.at[store, date_str] = 'Missing'
+                else:
+                    date_str = date_range if isinstance(date_range, str) else date_range.strftime('%Y-%m-%d')
                     if date_str in df.columns:
                         df.at[store, date_str] = 'Missing'
 
@@ -154,6 +162,7 @@ def display_timesheet_data(view, timesheet_data, start_date, end_date, results_t
                 results_table.setItem(row, col, item)
     except Exception as e:
         print(f"Error displaying timesheet data: {e}")
+
 
 def display_all_data(view, combined_results, start_date, end_date, results_table):
     try:
