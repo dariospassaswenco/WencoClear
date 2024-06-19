@@ -8,13 +8,7 @@ import traceback
 def transform_missing_dates_to_df(missing_data, start_date, end_date):
     date_range = pd.date_range(start=start_date, end=end_date)
     columns = [date.strftime('%Y-%m-%d') for date in date_range]
-
-    # Include all stores and initialize them with 'Present'
-    all_stores = set(missing_data.keys())
-    for store, dates in missing_data.items():
-        all_stores.update(store)
-
-    df = pd.DataFrame(index=all_stores, columns=columns)
+    df = pd.DataFrame(index=missing_data.keys(), columns=columns)
     df = df.fillna('Present')
 
     for store, dates in missing_data.items():
@@ -23,7 +17,6 @@ def transform_missing_dates_to_df(missing_data, start_date, end_date):
                 df.at[store, date] = 'Missing'
 
     return df
-
 
 def display_data(view, missing_data, start_date, end_date, results_table):
     try:
@@ -73,53 +66,75 @@ def display_tech_data(view, tech_data, start_date, end_date, results_table):
         else:
             df_midas = pd.DataFrame()
 
-        if not df_midas.empty and "Bigo" in tech_data:
-            df = pd.concat([df_midas, df_bigo])
-        elif not df_midas.empty:
-            df = df_midas
-        else:
-            df = df_bigo
-
         columns = []
-        for col in df.columns:
+        for col in df_midas.columns:
             date = datetime.strptime(col, '%Y-%m-%d')
             columns.append(f"{col}\n{date.strftime('%A')}")
 
-        results_table.setRowCount(len(df))
-        results_table.setColumnCount(len(df.columns))
+        results_table.setRowCount(len(df_midas))
+        results_table.setColumnCount(len(df_midas.columns))
         results_table.setHorizontalHeaderLabels(columns)
-        results_table.setVerticalHeaderLabels(df.index.astype(str).tolist())
+        results_table.setVerticalHeaderLabels(df_midas.index.astype(str).tolist())
 
-        for row in range(len(df)):
-            for col in range(len(df.columns)):
+        for row in range(len(df_midas)):
+            for col in range(len(df_midas.columns)):
                 item = QTableWidgetItem()
                 item.setText("")
-                date = datetime.strptime(df.columns[col], '%Y-%m-%d')
+                date = datetime.strptime(df_midas.columns[col], '%Y-%m-%d')
                 if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
                     item.setBackground(Qt.black)
                     item.setText("Closed")
                 elif date.weekday() == 6:  # Sunday
                     item.setBackground(Qt.gray)
-                elif df.iloc[row, col] == 'Missing':
+                elif df_midas.iloc[row, col] == 'Missing':
                     item.setBackground(Qt.red)
                 else:
                     item.setBackground(Qt.green)
                 results_table.setItem(row, col, item)
+
+        if "Bigo" in tech_data:
+            # Adding Bigo tech data below the Midas data
+            results_table.insertRow(len(df_midas))
+            for col in range(len(df_bigo.columns)):
+                item = QTableWidgetItem()
+                item.setText("")
+                date = datetime.strptime(df_bigo.columns[col], '%Y-%m-%d')
+                if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
+                    item.setBackground(Qt.black)
+                    item.setText("Closed")
+                elif date.weekday() == 6:  # Sunday
+                    item.setBackground(Qt.gray)
+                elif df_bigo.iloc[0, col] == 'Missing':
+                    item.setBackground(Qt.red)
+                else:
+                    item.setBackground(Qt.green)
+                results_table.setItem(len(df_midas), col, item)
+            results_table.setVerticalHeaderItem(len(df_midas), QTableWidgetItem("Bigo Tech Data"))
+
     except Exception as e:
         print(f"Error displaying tech data: {e}")
 
-def display_timesheet_data(view, missing_data, start_date, end_date, results_table):
+def display_timesheet_data(view, timesheet_data, start_date, end_date, results_table):
     try:
-        df = transform_missing_dates_to_df(missing_data, start_date, end_date)
+        # Here, timesheet_data is a list of (start_date, end_date) tuples for each store.
+        date_range = pd.date_range(start=start_date, end=end_date)
+        columns = [date.strftime('%Y-%m-%d') for date in date_range]
+        df = pd.DataFrame(index=timesheet_data.keys(), columns=columns)
+        df = df.fillna('Present')
 
-        columns = []
-        for col in df.columns:
-            date = datetime.strptime(col, '%Y-%m-%d')
-            columns.append(f"{col}\n{date.strftime('%A')}")
+        for store, date_ranges in timesheet_data.items():
+            for date_range in date_ranges:
+                start, end = date_range
+                for date in pd.date_range(start=start, end=end):
+                    date_str = date.strftime('%Y-%m-%d')
+                    if date_str in df.columns:
+                        df.at[store, date_str] = 'Missing'
+
+        columns_with_days = [f"{col}\n{datetime.strptime(col, '%Y-%m-%d').strftime('%A')}" for col in df.columns]
 
         results_table.setRowCount(len(df))
         results_table.setColumnCount(len(df.columns))
-        results_table.setHorizontalHeaderLabels(columns)
+        results_table.setHorizontalHeaderLabels(columns_with_days)
         results_table.setVerticalHeaderLabels(df.index.astype(str).tolist())
 
         for row in range(len(df)):
@@ -144,12 +159,6 @@ def display_all_data(view, combined_results, start_date, end_date, results_table
     try:
         columns = [date.strftime('%Y-%m-%d') for date in pd.date_range(start=start_date, end=end_date)]
         df = pd.DataFrame.from_dict(combined_results, orient='index', columns=columns)
-
-        # Ensure all dates and stores are represented
-        for col in columns:
-            if col not in df.columns:
-                df[col] = 'All Present'
-        df = df.fillna('All Present')
 
         columns_with_days = []
         for col in df.columns:
@@ -180,7 +189,6 @@ def display_all_data(view, combined_results, start_date, end_date, results_table
     except Exception as e:
         print(f"Error displaying all data: {e}")
         traceback.print_exc()
-
 
 def combine_all_results(midas_ss, bigo_ss, midas_tech, bigo_tech, midas_timesheet, bigo_timesheet, start_date,
                         end_date):
