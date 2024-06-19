@@ -9,8 +9,13 @@ class BigoTechExtractor:
     @staticmethod
     def process_tech_data(df):
         tech_name = df.iloc[3]['Store_or_Category'].split('For: ')[1]
-        date_str = df.iloc[2]['Store_or_Category'].split('Date Range: ')[1].split(' to ')[0]
-
+        # Check for date range or single date
+        if 'Date Range:' in df.iloc[2]['Store_or_Category']:
+            print("Date range is found, not a singular date")
+        elif 'Selected Date:' in df.iloc[2]['Store_or_Category']:
+            date_str = df.iloc[2]['Store_or_Category'].split('Selected Date: ')[1]
+        else:
+            raise ValueError("Date format not recognized in the report.")
         # Convert date to year-month-day format
         date = datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
 
