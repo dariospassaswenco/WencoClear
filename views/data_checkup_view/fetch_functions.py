@@ -13,7 +13,7 @@ def fetch_all_missing_data(view):
         print("Fetching Midas Data")
         ss_midas = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
         tech_midas = get_missing_midas_tech_dates(start_date, end_date, MIDAS_STORE_NUMBERS, 'midas_tech_summary')
-        timesheet_midas = {(start_date, end_date)}
+        timesheet_midas = {store: [(start_date, end_date)] for store in MIDAS_STORE_NUMBERS}
         print(f"Midas Sales Summary: {ss_midas}")
         print(f"Midas Tech Data: {tech_midas}")
         print(f"Midas Timesheet Data: {timesheet_midas}")

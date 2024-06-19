@@ -21,9 +21,10 @@ def generate_midas_reports(ss_midas, tech_midas, timesheet_midas):
 
     # Generate Timesheet Reports
     if timesheet_midas:
-        for store, date_range in timesheet_midas.items():
-            print(f"Generating Timesheet Report for store {store} from {date_range[0]} to {date_range[1]}")
-            midas_generator.generate_timesheet_reports({store: [date_range]})
+        for store, date_ranges in timesheet_midas.items():
+            for date_range in date_ranges:
+                print(f"Generating Timesheet Report for store {store} from {date_range[0]} to {date_range[1]}")
+                midas_generator.generate_timesheet_reports({store: [date_range]})
 
     midas_generator.actions.app.kill()  # Close POS
     print("Midas Reports Generated.")
