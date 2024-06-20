@@ -29,78 +29,52 @@ class BigoReportGenerator(ReportGenerator):
 
     def generate_ss_reports(self, missing_dates_per_store, retry=False):
         self.actions.select_report(self.config["ss_report_title"])
-        try:
-            for store_number, missing_dates in missing_dates_per_store.items():
-                self.actions.select_current_store(store_number)
-                for date in missing_dates:
-                    formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
-                    file_name = BIGO_FILENAME_PATTERN.format(store_number=store_number, report_type='ss', date=date)
-                    self.actions.enter_date_range(formatted_date, formatted_date)
-                    self.actions.select_generate_report()  # Clicking Excel button
-                    self.actions.enter_file_destination()
-                    self.actions.enter_filename(file_name)
-                    self.actions.save_file()
-                    self.actions.wait_for_report_to_compile()
-                    self.actions.cleanup_and_close(date)
-                self.extractor.extract_reports()  # Extract the files for that store along the way
-        except Exception as e:
-            if not retry:
-                print(f"Error generating SS reports: {e}. Retrying...")
-                remaining_dates = get_missing_ss_dates(datetime.strptime(date, '%Y-%m-%d'), datetime.today(),
-                                                       {store_number: store_number}, BIGO_SS_TABLE)
-                self.restart_pos()
-                self.generate_ss_reports(remaining_dates, retry=True)
-            else:
-                print(f"Failed to generate SS reports after retrying: {e}")
+        for store_number, missing_dates in missing_dates_per_store.items():
+            self.actions.select_current_store(store_number)
+            for date in missing_dates:
+                formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
+                file_name = BIGO_FILENAME_PATTERN.format(store_number=store_number, report_type='ss', date=date)
+                self.actions.enter_date_range(formatted_date, formatted_date)
+                self.actions.select_generate_report()  # Clicking Excel button
+                self.actions.enter_file_destination()
+                self.actions.enter_filename(file_name)
+                self.actions.save_file()
+                self.actions.wait_for_report_to_compile()
+                self.actions.cleanup_and_close(date)
+            self.extractor.extract_reports()  # Extract the files for that store along the way
 
     def generate_timesheet_reports(self, missing_dates, retry=False):
         self.actions.select_report(self.config["timesheet_report_title"])
-        try:
-            for date_range in missing_dates:
-                start_date_str, end_date_str = date_range
-                file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
-                pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
-                pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
-                self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-                self.actions.select_generate_report()  # Click excel button
-                self.actions.enter_file_destination()
-                self.actions.enter_filename(file_name)
-                self.actions.save_file()
-                self.actions.ts_select_employees()
-                self.actions.wait_for_report_to_compile()
-                self.actions.cleanup_and_close(end_date_str)
-            self.extractor.extract_reports()
-        except Exception as e:
-            if not retry:
-                print(f"Error generating Timesheet reports: {e}. Retrying...")
-                self.restart_pos()
-                self.generate_timesheet_reports(missing_dates, retry=True)
-            else:
-                print(f"Failed to generate Timesheet reports after retrying: {e}")
+        for date_range in missing_dates:
+            start_date_str, end_date_str = date_range
+            file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
+            pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+            pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+            self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
+            self.actions.select_generate_report()  # Click excel button
+            self.actions.enter_file_destination()
+            self.actions.enter_filename(file_name)
+            self.actions.save_file()
+            self.actions.ts_select_employees()
+            self.actions.wait_for_report_to_compile()
+            self.actions.cleanup_and_close(end_date_str)
+        self.extractor.extract_reports()
+
 
     def generate_tech_reports(self, missing_dates, retry=False):
         self.actions.select_report(self.config["tech_report_title"])
-        try:
-            for date_str in missing_dates:
-                start_date_str = date_str
-                end_date_str = date_str
-                file_name = BIGO_FILENAME_PATTERN.format(store_number="TECH", report_type='tech', date=end_date_str)
-                pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
-                pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
-                self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-                self.actions.select_generate_report()  # Click excel button
-                self.actions.enter_file_destination()
-                self.actions.enter_filename(file_name)
-                self.actions.save_file()
-                self.actions.ts_select_employees()
-                self.actions.wait_for_report_to_compile()
-                self.actions.cleanup_and_close(end_date_str)
-            self.extractor.extract_reports()
-        except Exception as e:
-            if not retry:
-                print(f"Error generating Tech reports: {e}. Retrying...")
-                remaining_dates = get_missing_bigo_tech_dates(start_date_str, end_date_str, 'bigo_tech_summary')
-                self.restart_pos()
-                self.generate_tech_reports(remaining_dates, retry=True)
-            else:
-                print(f"Failed to generate Tech reports after retrying: {e}")
+        for date_str in missing_dates:
+            start_date_str = date_str
+            end_date_str = date_str
+            file_name = BIGO_FILENAME_PATTERN.format(store_number="TECH", report_type='tech', date=end_date_str)
+            pos_formatted_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+            pos_formatted_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').strftime('%m%d%Y')
+            self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
+            self.actions.select_generate_report()  # Click excel button
+            self.actions.enter_file_destination()
+            self.actions.enter_filename(file_name)
+            self.actions.save_file()
+            self.actions.ts_select_employees()
+            self.actions.wait_for_report_to_compile()
+            self.actions.cleanup_and_close(end_date_str)
+        self.extractor.extract_reports()

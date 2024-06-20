@@ -31,88 +31,62 @@ class MidasReportGenerator(ReportGenerator):
     def generate_ss_reports(self, missing_dates_per_store, retry=False):
         self.actions.select_sales_reports_menu()
         self.actions.select_initial_store()
-        try:
-            for store_number, missing_dates in missing_dates_per_store.items():
-                self.actions.select_current_store(store_number)
-                for date in missing_dates:
-                    formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
-                    file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='ss', date=date)
-                    self.actions.enter_date_range(formatted_date, formatted_date)
-                    self.actions.ss_select_ss_report()
-                    self.actions.wait_for_report_to_compile()
-                    self.actions.select_generate_report()
-                    self.actions.enter_filename(file_name)
-                    self.actions.enter_file_destination()
-                    self.actions.cleanup_and_close()
-                self.extractor.extract_reports()  # Extract the files for that store along the way
-            self.actions.return_to_main_menu()
-        except Exception as e:
-            if not retry:
-                print(f"Error generating SS reports: {e}. Retrying...")
-                remaining_dates = get_missing_ss_dates(datetime.strptime(date, '%Y-%m-%d'), datetime.today(),
-                                                       {store_number: store_number}, MIDAS_SS_TABLE)
-                self.restart_pos()
-                self.generate_ss_reports(remaining_dates, retry=True)
-            else:
-                print(f"Failed to generate SS reports after retrying: {e}")
+        for store_number, missing_dates in missing_dates_per_store.items():
+            self.actions.select_current_store(store_number)
+            for date in missing_dates:
+                formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
+                file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='ss', date=date)
+                self.actions.enter_date_range(formatted_date, formatted_date)
+                self.actions.ss_select_ss_report()
+                self.actions.wait_for_report_to_compile()
+                self.actions.select_generate_report()
+                self.actions.enter_filename(file_name)
+                self.actions.enter_file_destination()
+                self.actions.cleanup_and_close()
+            self.extractor.extract_reports()  # Extract the files for that store along the way
+        self.actions.return_to_main_menu()
+
 
     def generate_timesheet_reports(self, missing_dates_per_store, retry=False):
         self.actions.select_initial_store()
         self.actions.select_other_reports_menu()
         self.actions.enter_password()
-        try:
-            for store_number, missing_dates in missing_dates_per_store.items():
-                self.actions.select_current_store(store_number)
-                for start_date_str, end_date_str in missing_dates:
-                    start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-                    file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='ts', date=end_date_str)
-                    pos_formatted_start_date = start_date.strftime('%m%d%Y')
-                    pos_formatted_end_date = end_date.strftime('%m%d%Y')
-                    self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-                    self.actions.ts_select_timesheet_report()
-                    self.actions.ts_select_employees()
-                    self.actions.wait_for_report_to_compile()
-                    self.actions.select_generate_report()
-                    self.actions.enter_filename(file_name)
-                    self.actions.enter_file_destination()
-                    self.actions.cleanup_and_close()
-                self.extractor.extract_reports()
-        except Exception as e:
-            if not retry:
-                print(f"Error generating Timesheet reports: {e}. Retrying...")
-                self.restart_pos()
-                self.generate_ss_reports(missing_dates_per_store, retry=True)
-            else:
-                print(f"Failed to generate Timesheet reports after retrying: {e}")
+        for store_number, missing_dates in missing_dates_per_store.items():
+            self.actions.select_current_store(store_number)
+            for start_date_str, end_date_str in missing_dates:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+                file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='ts', date=end_date_str)
+                pos_formatted_start_date = start_date.strftime('%m%d%Y')
+                pos_formatted_end_date = end_date.strftime('%m%d%Y')
+                self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
+                self.actions.ts_select_timesheet_report()
+                self.actions.ts_select_employees()
+                self.actions.wait_for_report_to_compile()
+                self.actions.select_generate_report()
+                self.actions.enter_filename(file_name)
+                self.actions.enter_file_destination()
+                self.actions.cleanup_and_close()
+            self.extractor.extract_reports()
+
 
     def generate_tech_reports(self, missing_dates_per_store, retry=False):
         self.actions.select_sales_reports_menu()
         self.actions.select_initial_store()
-        try:
-            for store_number, missing_dates in missing_dates_per_store.items():
-                self.actions.select_current_store(store_number)
-                for date_str in missing_dates:
-                    start_date = datetime.strptime(date_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(date_str, '%Y-%m-%d')
-                    file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='tech', date=date_str)
-                    pos_formatted_start_date = start_date.strftime('%m%d%Y')
-                    pos_formatted_end_date = end_date.strftime('%m%d%Y')
-                    self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
-                    self.actions.tech_select_tech_report()
-                    self.actions.wait_for_report_to_compile()
-                    self.actions.select_generate_report()
-                    self.actions.enter_filename(file_name)
-                    self.actions.enter_file_destination()
-                    self.actions.cleanup_and_close()
-                self.extractor.extract_reports()
-            self.actions.return_to_main_menu()
-        except Exception as e:
-            if not retry:
-                print(f"Error generating Tech reports: {e}. Retrying...")
-                remaining_dates = get_missing_timesheet_dates(datetime.strptime(date, '%Y-%m-%d'), datetime.today(),
-                                                       {store_number: store_number}, MIDAS_TIMESHEET_TABLE)
-                self.restart_pos()
-                self.generate_ss_reports(remaining_dates, retry=True)
-            else:
-                print(f"Failed to generate Tech reports after retrying: {e}")
+        for store_number, missing_dates in missing_dates_per_store.items():
+            self.actions.select_current_store(store_number)
+            for date_str in missing_dates:
+                start_date = datetime.strptime(date_str, '%Y-%m-%d')
+                end_date = datetime.strptime(date_str, '%Y-%m-%d')
+                file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='tech', date=date_str)
+                pos_formatted_start_date = start_date.strftime('%m%d%Y')
+                pos_formatted_end_date = end_date.strftime('%m%d%Y')
+                self.actions.enter_date_range(pos_formatted_start_date, pos_formatted_end_date)
+                self.actions.tech_select_tech_report()
+                self.actions.wait_for_report_to_compile()
+                self.actions.select_generate_report()
+                self.actions.enter_filename(file_name)
+                self.actions.enter_file_destination()
+                self.actions.cleanup_and_close()
+            self.extractor.extract_reports()
+        self.actions.return_to_main_menu()
