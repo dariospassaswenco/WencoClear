@@ -28,7 +28,7 @@ class MidasReportGenerator(ReportGenerator):
         navigation.close_pos()
         self.prepare_pos()
 
-    def generate_ss_reports(self, missing_dates_per_store, retry=False):
+    def generate_ss_reports(self, missing_dates_per_store):
         self.actions.select_sales_reports_menu()
         self.actions.select_initial_store()
         for store_number, missing_dates in missing_dates_per_store.items():
@@ -47,7 +47,7 @@ class MidasReportGenerator(ReportGenerator):
         self.actions.return_to_main_menu()
 
 
-    def generate_timesheet_reports(self, missing_dates_per_store, retry=False):
+    def generate_timesheet_reports(self, missing_dates_per_store):
         self.actions.select_initial_store()
         self.actions.select_other_reports_menu()
         self.actions.enter_password()
@@ -70,7 +70,7 @@ class MidasReportGenerator(ReportGenerator):
             self.extractor.extract_reports()
 
 
-    def generate_tech_reports(self, missing_dates_per_store, retry=False):
+    def generate_tech_reports(self, missing_dates_per_store):
         self.actions.select_sales_reports_menu()
         self.actions.select_initial_store()
         for store_number, missing_dates in missing_dates_per_store.items():

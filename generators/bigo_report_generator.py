@@ -27,7 +27,7 @@ class BigoReportGenerator(ReportGenerator):
         navigation.close_pos()
         self.prepare_pos()
 
-    def generate_ss_reports(self, missing_dates_per_store, retry=False):
+    def generate_ss_reports(self, missing_dates_per_store):
         self.actions.select_report(self.config["ss_report_title"])
         for store_number, missing_dates in missing_dates_per_store.items():
             self.actions.select_current_store(store_number)
@@ -43,7 +43,7 @@ class BigoReportGenerator(ReportGenerator):
                 self.actions.cleanup_and_close(date)
             self.extractor.extract_reports()  # Extract the files for that store along the way
 
-    def generate_timesheet_reports(self, missing_dates, retry=False):
+    def generate_timesheet_reports(self, missing_dates):
         self.actions.select_report(self.config["timesheet_report_title"])
         for date_range in missing_dates:
             start_date_str, end_date_str = date_range
@@ -61,7 +61,7 @@ class BigoReportGenerator(ReportGenerator):
         self.extractor.extract_reports()
 
 
-    def generate_tech_reports(self, missing_dates, retry=False):
+    def generate_tech_reports(self, missing_dates):
         self.actions.select_report(self.config["tech_report_title"])
         for date_str in missing_dates:
             start_date_str = date_str
