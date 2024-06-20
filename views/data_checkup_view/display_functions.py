@@ -1,3 +1,5 @@
+# views/data_checkup_views/display_functions
+
 from datetime import datetime
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem
@@ -18,20 +20,46 @@ def transform_missing_dates_to_df(missing_data, start_date, end_date):
 
     return df
 
-def display_data(view, missing_data, start_date, end_date, results_table):
+def filter_stores_by_type(df, store_type):
+    if store_type == "Midas":
+        return df[df.index.isin(MIDAS_STORE_NUMBERS)]
+    elif store_type == "Bigo":
+        return df[df.index.isin(BIGO_STORE_NUMBERS)]
+    return df
+
+def display_sales_summary_data(view, ss_data, start_date, end_date, results_table):
     try:
-        df = transform_missing_dates_to_df(missing_data, start_date, end_date)
+        results_table.clear()  # Clear the table before adding new data
 
-        columns = []
-        for col in df.columns:
-            date = datetime.strptime(col, '%Y-%m-%d')
-            columns.append(f"{col}\n{date.strftime('%A')}")
+        # Create a DataFrame for the date range and all Midas and Bigo stores
+        date_range = pd.date_range(start=start_date, end=end_date)
+        columns = [date.strftime('%Y-%m-%d') for date in date_range]
+        all_stores = MIDAS_STORE_NUMBERS + BIGO_STORE_NUMBERS
 
+        # Initialize DataFrame
+        df = pd.DataFrame(index=all_stores, columns=columns).fillna('Present')
+
+        # Fill in the DataFrame for Midas and Bigo stores
+        for store, dates in ss_data.items():
+            for date in dates:
+                date_str = date if isinstance(date, str) else date.strftime('%Y-%m-%d')
+                if date_str in df.columns:
+                    df.at[store, date_str] = 'Missing'
+
+        # Filter stores based on the selected store type
+        store_type = view.store_type_combo.currentText()
+        df = filter_stores_by_type(df, store_type)
+
+        # Add day names to column headers
+        columns_with_days = [f"{col}\n{datetime.strptime(col, '%Y-%m-%d').strftime('%A')}" for col in df.columns]
+
+        # Set table row and column counts
         results_table.setRowCount(len(df))
         results_table.setColumnCount(len(df.columns))
-        results_table.setHorizontalHeaderLabels(columns)
+        results_table.setHorizontalHeaderLabels(columns_with_days)
         results_table.setVerticalHeaderLabels(df.index.astype(str).tolist())
 
+        # Populate the table
         for row in range(len(df)):
             for col in range(len(df.columns)):
                 item = QTableWidgetItem()
@@ -47,9 +75,9 @@ def display_data(view, missing_data, start_date, end_date, results_table):
                 else:
                     item.setBackground(Qt.green)
                 results_table.setItem(row, col, item)
-    except Exception as e:
-        print(f"Error displaying data: {e}")
 
+    except Exception as e:
+        print(f"Error displaying sales summary data: {e}")
 
 def display_tech_data(view, tech_data, start_date, end_date, results_table):
     try:
@@ -82,6 +110,10 @@ def display_tech_data(view, tech_data, start_date, end_date, results_table):
         # Concatenate Midas and Bigo dataframes
         df = pd.concat([df_midas, df_bigo])
 
+        # Filter stores based on the selected store type
+        store_type = view.store_type_combo.currentText()
+        df = filter_stores_by_type(df, store_type)
+
         # Add day names to column headers
         columns_with_days = [f"{col}\n{datetime.strptime(col, '%Y-%m-%d').strftime('%A')}" for col in df.columns]
 
@@ -111,7 +143,6 @@ def display_tech_data(view, tech_data, start_date, end_date, results_table):
     except Exception as e:
         print(f"Error displaying tech data: {e}")
 
-
 def display_timesheet_data(view, timesheet_data, start_date, end_date, results_table):
     try:
         # Ensure all stores are present in the timesheet_data, even if they have no missing dates
@@ -140,6 +171,10 @@ def display_timesheet_data(view, timesheet_data, start_date, end_date, results_t
                     if date_str in df.columns:
                         df.at[store, date_str] = 'Missing'
 
+        # Filter stores based on the selected store type
+        store_type = view.store_type_combo.currentText()
+        df = filter_stores_by_type(df, store_type)
+
         columns_with_days = [f"{col}\n{datetime.strptime(col, '%Y-%m-%d').strftime('%A')}" for col in df.columns]
 
         results_table.setRowCount(len(df))
@@ -165,11 +200,14 @@ def display_timesheet_data(view, timesheet_data, start_date, end_date, results_t
     except Exception as e:
         print(f"Error displaying timesheet data: {e}")
 
-
 def display_all_data(view, combined_results, start_date, end_date, results_table):
     try:
         columns = [date.strftime('%Y-%m-%d') for date in pd.date_range(start=start_date, end=end_date)]
         df = pd.DataFrame.from_dict(combined_results, orient='index', columns=columns)
+
+        # Filter stores based on the selected store type
+        store_type = view.store_type_combo.currentText()
+        df = filter_stores_by_type(df, store_type)
 
         columns_with_days = []
         for col in df.columns:

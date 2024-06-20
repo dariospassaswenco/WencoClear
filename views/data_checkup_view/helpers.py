@@ -1,9 +1,10 @@
+# views/data_checkup_views/helpers
 import traceback
 from config.app_settings import MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_STORE_NUMBERS, BIGO_SS_TABLE, CLOSED_DAYS
 from database.ss_data import get_missing_ss_dates
 from database.tech_data import get_missing_midas_tech_dates, get_missing_bigo_tech_dates
 from database.timesheet_data import get_missing_timesheet_dates
-from .display_functions import display_data, display_tech_data, display_timesheet_data, display_all_data, combine_all_results
+from .display_functions import display_sales_summary_data, display_tech_data, display_timesheet_data, display_all_data, combine_all_results
 
 def run_data_checkup(view, report_type):
     try:
@@ -16,13 +17,13 @@ def run_data_checkup(view, report_type):
                 midas_results = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
                 bigo_results = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
                 combined_results = {**midas_results, **bigo_results}
-                display_data(view, combined_results, start_date, end_date, view.sales_summary_results_table)
+                display_sales_summary_data(view, combined_results, start_date, end_date, view.sales_summary_results_table)
             elif store_type == "Midas":
                 results = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
-                display_data(view, results, start_date, end_date, view.sales_summary_results_table)
+                display_sales_summary_data(view, results, start_date, end_date, view.sales_summary_results_table)
             elif store_type == "Bigo":
                 results = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
-                display_data(view, results, start_date, end_date, view.sales_summary_results_table)
+                display_sales_summary_data(view, results, start_date, end_date, view.sales_summary_results_table)
 
         elif report_type == "Tech Data":
             if store_type == "All":
