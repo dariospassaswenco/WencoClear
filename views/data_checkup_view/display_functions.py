@@ -50,67 +50,63 @@ def display_data(view, missing_data, start_date, end_date, results_table):
     except Exception as e:
         print(f"Error displaying data: {e}")
 
+
 def display_tech_data(view, tech_data, start_date, end_date, results_table):
     try:
         results_table.clear()  # Clear the table before adding new data
 
-        # Display Midas Tech Data
+        # Create a DataFrame for the date range and all Midas stores
+        date_range = pd.date_range(start=start_date, end=end_date)
+        columns = [date.strftime('%Y-%m-%d') for date in date_range]
+        midas_stores = MIDAS_STORE_NUMBERS
+        bigo_store = ["Bigo Tech Data"]
+
+        # Initialize dataframes
+        df_midas = pd.DataFrame(index=midas_stores, columns=columns).fillna('Present')
+        df_bigo = pd.DataFrame(index=bigo_store, columns=columns).fillna('Present')
+
+        # Fill in the DataFrame for Midas stores
         if "Midas" in tech_data:
             midas_missing_dates = tech_data["Midas"]
-            df_midas = transform_missing_dates_to_df(midas_missing_dates, start_date, end_date)
-            columns = []
-            for col in df_midas.columns:
-                date = datetime.strptime(col, '%Y-%m-%d')
-                columns.append(f"{col}\n{date.strftime('%A')}")
+            for store, dates in midas_missing_dates.items():
+                for date in dates:
+                    date_str = date if isinstance(date, str) else date.strftime('%Y-%m-%d')
+                    if date_str in df_midas.columns:
+                        df_midas.at[store, date_str] = 'Missing'
 
-            results_table.setRowCount(len(df_midas))
-            results_table.setColumnCount(len(df_midas.columns))
-            results_table.setHorizontalHeaderLabels(columns)
-            results_table.setVerticalHeaderLabels(df_midas.index.astype(str).tolist())
-
-            for row in range(len(df_midas)):
-                for col in range(len(df_midas.columns)):
-                    item = QTableWidgetItem()
-                    item.setText("")
-                    date = datetime.strptime(df_midas.columns[col], '%Y-%m-%d')
-                    if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
-                        item.setBackground(Qt.black)
-                        item.setText("Closed")
-                    elif date.weekday() == 6:  # Sunday
-                        item.setBackground(Qt.gray)
-                    elif df_midas.iloc[row, col] == 'Missing':
-                        item.setBackground(Qt.red)
-                    else:
-                        item.setBackground(Qt.green)
-                    results_table.setItem(row, col, item)
-
-        # Display Bigo Tech Data
+        # Fill in the DataFrame for Bigo store
         if "Bigo" in tech_data:
             bigo_missing_dates = tech_data["Bigo"]
-            df_bigo = pd.DataFrame(
-                columns=[date.strftime('%Y-%m-%d') for date in pd.date_range(start=start_date, end=end_date)]
-            )
-            df_bigo.loc[0] = ['Missing' if date in bigo_missing_dates else 'Found' for date in df_bigo.columns]
-            df_bigo.index = ["Bigo Tech Data"]
+            df_bigo.loc["Bigo Tech Data"] = ['Missing' if date in bigo_missing_dates else 'Found' for date in columns]
 
-            # Add Bigo data to the table below the Midas data
-            start_row = len(df_midas) if "Midas" in tech_data else 0
-            results_table.setRowCount(start_row + 1)
-            for col in range(len(df_bigo.columns)):
+        # Concatenate Midas and Bigo dataframes
+        df = pd.concat([df_midas, df_bigo])
+
+        # Add day names to column headers
+        columns_with_days = [f"{col}\n{datetime.strptime(col, '%Y-%m-%d').strftime('%A')}" for col in df.columns]
+
+        # Set table row and column counts
+        results_table.setRowCount(len(df))
+        results_table.setColumnCount(len(df.columns))
+        results_table.setHorizontalHeaderLabels(columns_with_days)
+        results_table.setVerticalHeaderLabels(df.index.astype(str).tolist())
+
+        # Populate the table
+        for row in range(len(df)):
+            for col in range(len(df.columns)):
                 item = QTableWidgetItem()
                 item.setText("")
-                date = datetime.strptime(df_bigo.columns[col], '%Y-%m-%d')
+                date = datetime.strptime(df.columns[col], '%Y-%m-%d')
                 if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
                     item.setBackground(Qt.black)
                     item.setText("Closed")
                 elif date.weekday() == 6:  # Sunday
                     item.setBackground(Qt.gray)
-                elif df_bigo.iloc[0, col] == 'Missing':
+                elif df.iloc[row, col] == 'Missing':
                     item.setBackground(Qt.red)
                 else:
                     item.setBackground(Qt.green)
-                results_table.setItem(start_row, col, item)
-            results_table.setVerticalHeaderItem(start_row, QTableWidgetItem("Bigo Tech Data"))
+                results_table.setItem(row, col, item)
 
     except Exception as e:
         print(f"Error displaying tech data: {e}")
