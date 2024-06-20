@@ -2,6 +2,7 @@ from .base_reports_navigation import ReportActions
 import time
 from pywinauto.application import Application
 from config.app_settings import *
+from pywinauto.findwindows import ElementNotFoundError
 
 class MidasReportActions(ReportActions):
     def __init__(self, app, config):
@@ -33,19 +34,32 @@ class MidasReportActions(ReportActions):
         self.perform_action_with_retry(action)
 
     def enter_password(self):
+        def check_dialog_exists():
+            try:
+                window = self.app.window(title="Reporting - R.O. Writer")
+                dialog = window.child_window(auto_id="PasswordTextBox", control_type="Edit")
+                return dialog.exists()
+            except ElementNotFoundError:
+                return False
+
         def type_password():
             password = self.config["password"]
             window = self.app.window(title="Reporting - R.O. Writer")
             dialog = window.child_window(auto_id="PasswordTextBox", control_type="Edit")
             dialog.type_keys(password, with_spaces=True)
             print("Password Typed")
-        def ok():
+
+        def click_ok():
             window = self.app.window(title="Reporting - R.O. Writer")
             ok_button = window.child_window(title="Ok", auto_id="OkButton", control_type="Button")
             ok_button.click_input()
             print("Password Entered")
-        self.perform_action_with_retry(type_password)
-        self.perform_action_with_retry(ok)
+
+        if check_dialog_exists():
+            self.perform_action_with_retry(type_password)
+            self.perform_action_with_retry(click_ok)
+        else:
+            print("Password dialog does not exist, continuing...")
 
     def select_sales_reports_menu(self):
         def action():
