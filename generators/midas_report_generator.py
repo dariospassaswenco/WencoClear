@@ -58,8 +58,9 @@ class MidasReportGenerator(ReportGenerator):
 
     def generate_timesheet_reports(self, missing_dates_per_store, retry=False):
         try:
-            self.actions.select_other_reports_menu()
             self.actions.select_initial_store()
+            self.actions.select_other_reports_menu()
+            self.actions.enter_password()
             for store_number, missing_dates in missing_dates_per_store.items():
                 self.actions.select_current_store(store_number)
                 for start_date_str, end_date_str in missing_dates:
