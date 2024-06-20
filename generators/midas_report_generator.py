@@ -29,9 +29,9 @@ class MidasReportGenerator(ReportGenerator):
         self.prepare_pos()
 
     def generate_ss_reports(self, missing_dates_per_store, retry=False):
+        self.actions.select_sales_reports_menu()
+        self.actions.select_initial_store()
         try:
-            self.actions.select_sales_reports_menu()
-            self.actions.select_initial_store()
             for store_number, missing_dates in missing_dates_per_store.items():
                 self.actions.select_current_store(store_number)
                 for date in missing_dates:
@@ -57,10 +57,10 @@ class MidasReportGenerator(ReportGenerator):
                 print(f"Failed to generate SS reports after retrying: {e}")
 
     def generate_timesheet_reports(self, missing_dates_per_store, retry=False):
+        self.actions.select_initial_store()
+        self.actions.select_other_reports_menu()
+        self.actions.enter_password()
         try:
-            self.actions.select_initial_store()
-            self.actions.select_other_reports_menu()
-            self.actions.enter_password()
             for store_number, missing_dates in missing_dates_per_store.items():
                 self.actions.select_current_store(store_number)
                 for start_date_str, end_date_str in missing_dates:
@@ -87,9 +87,9 @@ class MidasReportGenerator(ReportGenerator):
                 print(f"Failed to generate Timesheet reports after retrying: {e}")
 
     def generate_tech_reports(self, missing_dates_per_store, retry=False):
+        self.actions.select_sales_reports_menu()
+        self.actions.select_initial_store()
         try:
-            self.actions.select_sales_reports_menu()
-            self.actions.select_initial_store()
             for store_number, missing_dates in missing_dates_per_store.items():
                 self.actions.select_current_store(store_number)
                 for date_str in missing_dates:

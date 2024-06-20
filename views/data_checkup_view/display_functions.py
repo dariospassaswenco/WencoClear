@@ -118,6 +118,12 @@ def display_tech_data(view, tech_data, start_date, end_date, results_table):
 
 def display_timesheet_data(view, timesheet_data, start_date, end_date, results_table):
     try:
+        # Ensure all stores are present in the timesheet_data, even if they have no missing dates
+        all_stores = MIDAS_STORE_NUMBERS + BIGO_STORE_NUMBERS
+        for store in all_stores:
+            if store not in timesheet_data:
+                timesheet_data[store] = []
+
         # Create a DataFrame for the date range
         date_range = pd.date_range(start=start_date, end=end_date)
         columns = [date.strftime('%Y-%m-%d') for date in date_range]

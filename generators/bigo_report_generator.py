@@ -28,8 +28,8 @@ class BigoReportGenerator(ReportGenerator):
         self.prepare_pos()
 
     def generate_ss_reports(self, missing_dates_per_store, retry=False):
+        self.actions.select_report(self.config["ss_report_title"])
         try:
-            self.actions.select_report(self.config["ss_report_title"])
             for store_number, missing_dates in missing_dates_per_store.items():
                 self.actions.select_current_store(store_number)
                 for date in missing_dates:
@@ -54,8 +54,8 @@ class BigoReportGenerator(ReportGenerator):
                 print(f"Failed to generate SS reports after retrying: {e}")
 
     def generate_timesheet_reports(self, missing_dates, retry=False):
+        self.actions.select_report(self.config["timesheet_report_title"])
         try:
-            self.actions.select_report(self.config["timesheet_report_title"])
             for date_range in missing_dates:
                 start_date_str, end_date_str = date_range
                 file_name = BIGO_FILENAME_PATTERN.format(store_number='TS', report_type='ts', date=end_date_str)
@@ -79,8 +79,8 @@ class BigoReportGenerator(ReportGenerator):
                 print(f"Failed to generate Timesheet reports after retrying: {e}")
 
     def generate_tech_reports(self, missing_dates, retry=False):
+        self.actions.select_report(self.config["tech_report_title"])
         try:
-            self.actions.select_report(self.config["tech_report_title"])
             for date_str in missing_dates:
                 start_date_str = date_str
                 end_date_str = date_str
