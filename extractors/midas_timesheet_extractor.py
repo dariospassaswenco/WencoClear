@@ -25,7 +25,7 @@ class MidasTimesheetExtractor:
     def extract_timesheet_data(file_path):
         all_data = []
         lines = MidasTimesheetExtractor.extract_lines(file_path)
-        date_entered = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        date_entered = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Include time component
 
         if len(lines) >= 4:
             address = lines[3].strip()
@@ -85,8 +85,8 @@ class MidasTimesheetExtractor:
                 print(
                     f"Query executed: {query} with params wenco_id={row['wenco_id']}, last_name={row['last_name']}, date={row['date']}")
                 if result:
-                    existing_date_entered = datetime.strptime(result[0], '%Y-%m-%d %H:%M:%S')
-                    new_date_entered = datetime.strptime('2024-06-15 12:34:56', '%Y-%m-%d %H:%M:%S')
+                    existing_date_entered = datetime.strptime(result[0], '%Y-%m-%d %H:%M:%S')  # Include time component
+                    new_date_entered = datetime.strptime(row['date_entered'], '%Y-%m-%d %H:%M:%S')  # Include time component
                     if new_date_entered > existing_date_entered:
                         delete_query = text(
                             f"DELETE FROM {MIDAS_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
