@@ -39,10 +39,10 @@ class DataCheckupView(QWidget):
         self.set_default_week_range()
 
         # Fetch all missing button
-        fetch_all_missing_button = QPushButton("Fetch All Missing Data")
-        fetch_all_missing_button.setStyleSheet("background-color: lightgreen; font-weight: bold;")
-        fetch_all_missing_button.clicked.connect(self.fetch_all_missing_data)
-        layout.addWidget(fetch_all_missing_button)
+        self.fetch_all_missing_button = QPushButton("Fetch All Missing Data")
+        self.fetch_all_missing_button.setStyleSheet("background-color: lightgreen; font-weight: bold;")
+        self.fetch_all_missing_button.clicked.connect(self.fetch_all_missing_data)
+        layout.addWidget(self.fetch_all_missing_button)
 
         # Tab widget
         self.tab_widget = QTabWidget()
@@ -62,6 +62,7 @@ class DataCheckupView(QWidget):
 
         self.setLayout(layout)
 
+        self.tab_widget.currentChanged.connect(self.on_tab_change)
         self.update_calendar()
 
     def create_date_edit(self):
@@ -110,12 +111,13 @@ class DataCheckupView(QWidget):
         layout.addWidget(results_table)
 
         # Fetch buttons
-        fetch_missing_button = QPushButton(f"Fetch Missing {report_type} Data")
-        fetch_missing_button.setStyleSheet("background-color: lightgrey; font-weight: bold;")
-        fetch_missing_button.clicked.connect(lambda: self.fetch_missing_data(report_type))
-        fetch_layout = QHBoxLayout()
-        fetch_layout.addWidget(fetch_missing_button)
-        layout.addLayout(fetch_layout)
+        if report_type != "All Reports":
+            fetch_missing_button = QPushButton(f"Fetch Missing {report_type} Data")
+            fetch_missing_button.setStyleSheet("background-color: lightgrey; font-weight: bold;")
+            fetch_missing_button.clicked.connect(lambda: self.fetch_missing_data(report_type))
+            fetch_layout = QHBoxLayout()
+            fetch_layout.addWidget(fetch_missing_button)
+            layout.addLayout(fetch_layout)
 
         widget.setLayout(layout)
         return widget, results_table
@@ -136,3 +138,11 @@ class DataCheckupView(QWidget):
         elif report_type == "Sales By Category":
             print("Sales by Category (Midas) data fetch not implemented yet")
 
+    def on_tab_change(self, index):
+        current_tab = self.tab_widget.tabText(index)
+        if current_tab == "All Reports":
+            self.store_type_combo.hide()
+            self.fetch_all_missing_button.hide()
+        else:
+            self.store_type_combo.show()
+            self.fetch_all_missing_button.show()
