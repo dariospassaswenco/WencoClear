@@ -1,6 +1,29 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from generators.midas_report_generator import MidasReportGenerator
 from generators.bigo_report_generator import BigoReportGenerator
+
+
+def break_into_payroll_periods(timesheet_bigo):
+    def next_sunday(date):
+        days_ahead = 6 - date.weekday()
+        return date + timedelta(days=days_ahead + 1)
+
+    new_timesheet_bigo = []
+
+    for start_date, end_date in timesheet_bigo:
+        if start_date.weekday() == 6:  # If start_date is Sunday
+            current_start = start_date + timedelta(days=1)
+        else:
+            current_start = start_date
+
+        while current_start <= end_date:
+            current_end = next_sunday(current_start)
+            if current_end - timedelta(days=1) > end_date:
+                current_end = end_date + timedelta(days=1)
+            new_timesheet_bigo.append((current_start, current_end - timedelta(days=1)))
+            current_start = current_end
+
+    return new_timesheet_bigo
 
 def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, stop_requested, progress_callback):
     midas_generator = MidasReportGenerator()
@@ -50,6 +73,8 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, pr
     progress_callback("Preparing Bigo POS...")
     bigo_generator.prepare_pos()
 
+    timesheet_bigo = break_into_payroll_periods(timesheet_bigo)
+
     try:
         # Generate Sales Summary Reports
         if ss_bigo:
@@ -85,3 +110,15 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, pr
 
     bigo_generator.actions.app.kill()  # Close POS
     progress_callback("Bigo Reports Generated.")
+
+# Test the break_into_payroll_periods function
+if __name__ == "__main__":
+    test_timesheet_bigo = [
+        (datetime(2024, 6, 9), datetime(2024, 6, 20)),  # spans multiple periods
+        (datetime(2024, 6, 5), datetime(2024, 6, 6)),  # within a single period
+        (datetime(2024, 6, 20), datetime(2024, 7, 10)),  # spans multiple periods
+    ]
+
+    broken_timesheet_bigo = break_into_payroll_periods(test_timesheet_bigo)
+    for start_date, end_date in broken_timesheet_bigo:
+        print(f"From {start_date} to {end_date}")
