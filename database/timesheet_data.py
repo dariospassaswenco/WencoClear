@@ -50,6 +50,23 @@ def get_bigo_timesheet_data(start_date, end_date):
     columns = ['store_id', 'date', 'date_entered', 'first_name', 'last_name', 'hours']
     return pd.DataFrame(data, columns=columns)
 
+def get_oldest_date_entered(start_date, end_date):
+    query = text("""
+        SELECT wenco_id, last_name, first_name, MIN(date_entered) AS oldest_date_entered
+        FROM (
+            SELECT wenco_id, last_name, first_name, date_entered FROM midas_timesheet WHERE date BETWEEN :start_date AND :end_date
+            UNION ALL
+            SELECT wenco_id, last_name, first_name, date_entered FROM bigo_timesheet WHERE date BETWEEN :start_date AND :end_date
+        ) AS combined_timesheets
+        GROUP BY wenco_id, last_name, first_name
+        ORDER BY oldest_date_entered
+        LIMIT 1
+    """)
+    with ENGINE.connect() as conn:
+        result = conn.execute(query, {'start_date': start_date, 'end_date': end_date}).fetchone()
+    return result if result else None
+
+
 def test_timesheet_data():
     start_date = '2024-06-01'
     end_date = '2024-06-10'

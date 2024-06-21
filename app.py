@@ -12,7 +12,7 @@ class DataManagerGUI(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Wenco Data Manager')
+        self.setWindowTitle('WencoClear')
         self.setGeometry(200, 200, 2000, 1200)
 
         self.stacked_widget = QStackedWidget()

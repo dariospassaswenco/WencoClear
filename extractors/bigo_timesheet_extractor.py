@@ -93,10 +93,18 @@ class BigoTimesheetExtractor:
                                               'date': row['date']}).fetchone()
                 print(
                     f"Query executed: {query} with params wenco_id={row['wenco_id']}, last_name={row['last_name']}, date={row['date']}")
+
                 if result:
-                    existing_date_entered = datetime.strptime(result[0], '%Y-%m-%d %H:%M:%S')  # Include time component
-                    new_date_entered = datetime.strptime(row['date_entered'], '%Y-%m-%d %H:%M:%S')  # Include time component
-                    if new_date_entered > existing_date_entered:
+                    existing_date_entered = result[0]
+                    new_date_entered = row['date_entered']
+                    try:
+                        existing_date_entered_dt = datetime.strptime(existing_date_entered, '%Y-%m-%d %H:%M:%S')
+                    except ValueError:
+                        existing_date_entered_dt = datetime.strptime(existing_date_entered, '%Y-%m-%d')
+
+                    new_date_entered_dt = datetime.strptime(new_date_entered, '%Y-%m-%d %H:%M:%S')
+
+                    if new_date_entered_dt > existing_date_entered_dt:
                         delete_query = text(
                             f"DELETE FROM {BIGO_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
                         delete_result = conn.execute(delete_query,
@@ -107,11 +115,10 @@ class BigoTimesheetExtractor:
                         print(f"Number of rows deleted: {delete_result.rowcount}")
                     else:
                         print(
-                            f"No deletion needed: new_date_entered ({new_date_entered}) is not greater than existing_date_entered ({existing_date_entered})")
+                            f"No deletion needed: new_date_entered ({new_date_entered_dt}) is not greater than existing_date_entered ({existing_date_entered_dt})")
                 else:
                     print(
                         f"No matching record found for wenco_id={row['wenco_id']}, last_name={row['last_name']}, date={row['date']}")
-
 
 if __name__ == '__main__':
     # Test the extraction with a sample file path
