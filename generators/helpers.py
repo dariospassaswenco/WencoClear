@@ -74,7 +74,8 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, pr
     progress_callback("Preparing Bigo POS...")
     bigo_generator.prepare_pos()
 
-    timesheet_bigo = break_into_payroll_periods(timesheet_bigo)
+    if timesheet_bigo:
+        timesheet_bigo = break_into_payroll_periods(timesheet_bigo)
 
     try:
         # Generate Sales Summary Reports
