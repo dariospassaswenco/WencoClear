@@ -62,7 +62,7 @@ class BigoTimesheetExtractor:
             df['Date'] = pd.to_datetime(df['Date']).dt.strftime('%Y-%m-%d')
 
             # Add the date_entered column
-            date_entered = datetime.now().strftime('%Y-%m-%d')
+            date_entered = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             df['date_entered'] = date_entered
 
             # Convert to list of BigoTimesheet dataclass instances
@@ -94,8 +94,8 @@ class BigoTimesheetExtractor:
                 print(
                     f"Query executed: {query} with params wenco_id={row['wenco_id']}, last_name={row['last_name']}, date={row['date']}")
                 if result:
-                    existing_date_entered = datetime.strptime(result[0], '%Y-%m-%d')
-                    new_date_entered = datetime.strptime('2024-06-15', '%Y-%m-%d')
+                    existing_date_entered = datetime.strptime(result[0], '%Y-%m-%d %H:%M:%S')
+                    new_date_entered = datetime.strptime('2024-06-15 12:34:56', '%Y-%m-%d %H:%M:%S')
                     if new_date_entered > existing_date_entered:
                         delete_query = text(
                             f"DELETE FROM {BIGO_TIMESHEET_TABLE} WHERE wenco_id = :wenco_id AND last_name = :last_name AND date = :date")
