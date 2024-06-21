@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, text
 from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS, CLOSED_DAYS
 from datetime import datetime
 
+
 def get_missing_timesheet_dates(start_date, end_date, table_name, store_numbers):
     missing_data_info = {}
 
@@ -88,6 +89,7 @@ def test_timesheet_data():
     print("Testing get_bigo_timesheet_data:")
     bigo_timesheet_data = get_bigo_timesheet_data(start_date, end_date)
     print(bigo_timesheet_data)
+
 
 if __name__ == "__main__":
     test_timesheet_data()

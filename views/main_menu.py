@@ -42,22 +42,27 @@ class MainMenu(QWidget):
         btn_data_checkup = QPushButton('Data Checkup')
         btn_configure = QPushButton('Configure')
         btn_timesheets = QPushButton('Timesheets')
+        btn_manage_employees = QPushButton('Manage Employees')
 
         btn_data_checkup.setIcon(QIcon.fromTheme("view-refresh"))
         btn_configure.setIcon(QIcon.fromTheme("configure"))
         btn_timesheets.setIcon(QIcon.fromTheme("document-save"))
+        btn_manage_employees.setIcon(QIcon.fromTheme("user-group"))
 
         btn_data_checkup.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px;")
         btn_configure.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px;")
         btn_timesheets.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px;")
+        btn_manage_employees.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px;")
 
         btn_data_checkup.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
         btn_configure.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(2))
         btn_timesheets.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(3))
+        btn_manage_employees.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(4))
 
         buttons_layout.addWidget(btn_data_checkup)
         buttons_layout.addWidget(btn_configure)
         buttons_layout.addWidget(btn_timesheets)
+        buttons_layout.addWidget(btn_manage_employees)
 
         main_layout.addLayout(buttons_layout)
         main_layout.addStretch()  # Add stretch to push buttons up
