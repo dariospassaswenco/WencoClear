@@ -65,6 +65,9 @@ class DataCheckupView(QWidget):
         self.tab_widget.currentChanged.connect(self.on_tab_change)
         self.update_calendar()
 
+        # Set initial state based on the current tab
+        self.on_tab_change(self.tab_widget.currentIndex())
+
     def create_date_edit(self):
         date_edit = QDateEdit()
         date_edit.setDate(QDate.currentDate())
@@ -142,7 +145,7 @@ class DataCheckupView(QWidget):
         current_tab = self.tab_widget.tabText(index)
         if current_tab == "All Reports":
             self.store_type_combo.hide()
-            self.fetch_all_missing_button.hide()
+            self.fetch_all_missing_button.show()
         else:
             self.store_type_combo.show()
             self.fetch_all_missing_button.show()
