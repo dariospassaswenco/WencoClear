@@ -49,11 +49,6 @@ def query_sales_summary_data(start_date, end_date, store_type):
         traceback.print_exc()
         return create_empty_dataframe(start_date, end_date, [])
 
-import pandas as pd
-from sqlalchemy import create_engine
-from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS, create_empty_dataframe
-import traceback
-
 def query_tech_data(start_date, end_date, store_type):
     try:
         if store_type == "Midas":
