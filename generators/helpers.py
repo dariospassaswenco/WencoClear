@@ -6,22 +6,23 @@ from generators.bigo_report_generator import BigoReportGenerator
 def break_into_payroll_periods(timesheet_bigo):
     def next_sunday(date):
         days_ahead = 6 - date.weekday()
-        return date + timedelta(days=days_ahead + 1)
+        return date + timedelta(days=days_ahead)
+
+    def previous_sunday(date):
+        days_back = (date.weekday() + 1) % 7
+        return date - timedelta(days=days_back)
 
     new_timesheet_bigo = []
 
-    for start_date, end_date in timesheet_bigo:
-        if start_date.weekday() == 6:  # If start_date is Sunday
-            current_start = start_date + timedelta(days=1)
-        else:
-            current_start = start_date
-
+    for start_date_str, end_date_str in timesheet_bigo:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        current_start = start_date
         while current_start <= end_date:
-            current_end = next_sunday(current_start)
-            if current_end - timedelta(days=1) > end_date:
-                current_end = end_date + timedelta(days=1)
-            new_timesheet_bigo.append((current_start, current_end - timedelta(days=1)))
-            current_start = current_end
+            current_end = min(next_sunday(current_start), end_date)
+            if current_start != current_end:
+                new_timesheet_bigo.append((current_start.strftime('%Y-%m-%d'), (current_end - timedelta(days=1)).strftime('%Y-%m-%d')))
+            current_start = current_end + timedelta(days=1)
 
     return new_timesheet_bigo
 
@@ -112,11 +113,12 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, pr
     progress_callback("Bigo Reports Generated.")
 
 # Test the break_into_payroll_periods function
+# Test the break_into_payroll_periods function
 if __name__ == "__main__":
     test_timesheet_bigo = [
-        (datetime(2024, 6, 9), datetime(2024, 6, 20)),  # spans multiple periods
-        (datetime(2024, 6, 5), datetime(2024, 6, 6)),  # within a single period
-        (datetime(2024, 6, 20), datetime(2024, 7, 10)),  # spans multiple periods
+        ('2024-06-09', '2024-06-20'),  # spans multiple periods
+        ('2024-06-05', '2024-06-06'),  # within a single period
+        ('2024-06-20', '2024-07-10'),  # spans multiple periods
     ]
 
     broken_timesheet_bigo = break_into_payroll_periods(test_timesheet_bigo)
