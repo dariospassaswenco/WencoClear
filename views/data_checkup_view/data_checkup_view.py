@@ -3,7 +3,7 @@ from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget
 from .helpers import run_data_checkup
 from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, fetch_missing_timesheet_data
-from .display_functions import display_sales_summary_data, display_tech_data, display_timesheet_data
+from .display_functions import display_sales_summary_data, display_tech_data, display_timesheet_data, display_all_data
 from config.app_settings import CLOSED_DAYS
 
 class DataCheckupView(QWidget):
@@ -50,15 +50,13 @@ class DataCheckupView(QWidget):
         self.sales_summary_tab, self.sales_summary_results_table = self.create_report_tab("Sales Summary")
         self.tech_tab, self.tech_results_table = self.create_report_tab("Tech Data")
         self.timesheet_tab, self.timesheet_results_table = self.create_report_tab("Timesheet Data")
-        if self.store_type_combo.currentText() != "Bigo":
-            self.sales_by_category_tab, self.sales_by_category_results_table = self.create_report_tab("Sales By Category")
+        self.sales_by_category_tab, self.sales_by_category_results_table = self.create_report_tab("Sales By Category")
 
         self.tab_widget.addTab(self.all_reports_tab, "All Reports")
         self.tab_widget.addTab(self.sales_summary_tab, "Sales Summary")
         self.tab_widget.addTab(self.tech_tab, "Tech Data")
         self.tab_widget.addTab(self.timesheet_tab, "Timesheet Data")
-        if self.store_type_combo.currentText() != "Bigo":
-            self.tab_widget.addTab(self.sales_by_category_tab, "Sales By Category")
+        self.tab_widget.addTab(self.sales_by_category_tab, "Sales By Category")
 
         layout.addWidget(self.tab_widget)
 
@@ -135,3 +133,6 @@ class DataCheckupView(QWidget):
             fetch_missing_tech_data(self)
         elif report_type == "Timesheet Data":
             fetch_missing_timesheet_data(self)
+        elif report_type == "Sales By Category":
+            print("Sales by Category (Midas) data fetch not implemented yet")
+
