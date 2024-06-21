@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox, QHeaderView, QPushButton, QApplication, QMessageBox, QTextEdit
 )
 from PyQt5.QtCore import Qt
-from database.employees import get_store_types, get_positions, get_all_employees, update_employees
+from database.employees import get_store_types, get_positions, get_all_employees
 from config.app_settings import CLEAR_DATABASE_PATH
 
 class EditEmployeesTab(QWidget):

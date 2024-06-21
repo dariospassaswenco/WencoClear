@@ -67,49 +67,6 @@ def get_all_employees():
         print(f"Error fetching employees: {e}")
         return pd.DataFrame()
 
-def update_employees(df):
-    try:
-        conn = sqlite3.connect(CLEAR_DATABASE_PATH)
-        cursor = conn.cursor()
-
-        for _, row in df.iterrows():
-            first_name, last_name, type_name, position_title, wenco_id = row
-            type_id = cursor.execute("SELECT type_id FROM store_types WHERE type_name=?", (type_name,)).fetchone()[0]
-            position_id = cursor.execute("SELECT position_id FROM positions WHERE title=?", (position_title,)).fetchone()[0]
-
-            cursor.execute("""
-                INSERT INTO employees (first_name, last_name, wenco_id, type_id, position_id)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(wenco_id) DO UPDATE SET
-                first_name=excluded.first_name,
-                last_name=excluded.last_name,
-                type_id=excluded.type_id,
-                position_id=excluded.position_id
-            """, (first_name, last_name, wenco_id, type_id, position_id))
-
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"Error updating employees: {e}")
-
-def delete_employees(df):
-    try:
-        conn = sqlite3.connect(CLEAR_DATABASE_PATH)
-        cursor = conn.cursor()
-
-        for _, row in df.iterrows():
-            first_name, last_name, type_name, position_title, wenco_id = row
-
-            cursor.execute("""
-                DELETE FROM employees
-                WHERE first_name=? AND last_name=? AND wenco_id=?
-            """, (first_name, last_name, wenco_id))
-
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"Error deleting employees: {e}")
-
 def get_db_connection():
     return sqlite3.connect(CLEAR_DATABASE_PATH)
 
