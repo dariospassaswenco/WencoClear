@@ -3,7 +3,7 @@ from database.tech_data import get_missing_midas_tech_dates, get_missing_bigo_te
 from config.app_settings import MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_SS_TABLE
 from generators.helpers import generate_midas_reports, generate_bigo_reports
 
-def fetch_all_missing_data(view):
+def fetch_all_missing_data(view, stop_requested, progress_callback):
     store_type = view.store_type_combo.currentText()
     start_date = view.start_date_edit.date().toPyDate()
     end_date = view.end_date_edit.date().toPyDate()
@@ -11,36 +11,42 @@ def fetch_all_missing_data(view):
     end_date_str = end_date.strftime('%Y-%m-%d')
 
     if store_type == "All" or store_type == "Midas":
-        print("Fetching Midas Data")
+        progress_callback("Fetching Midas Data")
         ss_midas = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
         tech_midas = get_missing_midas_tech_dates(start_date, end_date, MIDAS_STORE_NUMBERS, 'midas_tech_summary')
         timesheet_midas = {store: [(start_date_str, end_date_str)] for store in MIDAS_STORE_NUMBERS}
 
         if not ss_midas and not tech_midas and not any(timesheet_midas.values()):
-            print("Midas data is all up to date.")
+            progress_callback("Midas data is all up to date.")
         else:
-            print(f"Midas Sales Summary: {ss_midas}")
-            print(f"Midas Tech Data: {tech_midas}")
-            print(f"Midas Timesheet Data: {timesheet_midas}")
-            generate_midas_reports(ss_midas, tech_midas, timesheet_midas)
+            progress_callback(f"Midas Sales Summary: {ss_midas}")
+            progress_callback(f"Midas Tech Data: {tech_midas}")
+            progress_callback(f"Midas Timesheet Data: {timesheet_midas}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_midas_reports(ss_midas, tech_midas, timesheet_midas, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
-        print("Fetching Bigo Data")
+        progress_callback("Fetching Bigo Data")
         ss_bigo = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
         tech_bigo = get_missing_bigo_tech_dates(start_date, end_date, 'bigo_tech_summary')
         timesheet_bigo = [(start_date_str, end_date_str)]
 
         if not ss_bigo and not tech_bigo and not timesheet_bigo:
-            print("Bigo data is all up to date.")
+            progress_callback("Bigo data is all up to date.")
         else:
-            print(f"Bigo Sales Summary: {ss_bigo}")
-            print(f"Bigo Tech Data: {tech_bigo}")
-            print(f"Bigo Timesheet Data: {timesheet_bigo}")
-            generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo)
+            progress_callback(f"Bigo Sales Summary: {ss_bigo}")
+            progress_callback(f"Bigo Tech Data: {tech_bigo}")
+            progress_callback(f"Bigo Timesheet Data: {timesheet_bigo}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, progress_callback)
 
-    print("Fetching all missing data completed.")
+    progress_callback("Fetching all missing data completed.")
 
-def fetch_missing_ss_data(view):
+def fetch_missing_ss_data(view, stop_requested, progress_callback):
     store_type = view.store_type_combo.currentText()
     start_date = view.start_date_edit.date().toPyDate()
     end_date = view.end_date_edit.date().toPyDate()
@@ -48,22 +54,28 @@ def fetch_missing_ss_data(view):
     if store_type == "All" or store_type == "Midas":
         ss_midas = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
         if not ss_midas:
-            print("Sales Summary data for Midas is up to date.")
+            progress_callback("Sales Summary data for Midas is up to date.")
         else:
-            generate_midas_reports(ss_midas, None, None)
-            print("Midas Sales Summary:", ss_midas)
+            progress_callback(f"Fetching Midas Sales Summary: {ss_midas}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_midas_reports(ss_midas, None, None, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         ss_bigo = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
         if not ss_bigo:
-            print("Sales Summary data for Bigo is up to date.")
+            progress_callback("Sales Summary data for Bigo is up to date.")
         else:
-            generate_bigo_reports(ss_bigo, None, None)
-            print("Bigo Sales Summary:", ss_bigo)
+            progress_callback(f"Fetching Bigo Sales Summary: {ss_bigo}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_bigo_reports(ss_bigo, None, None, stop_requested, progress_callback)
 
-    print("Fetching Sales Summary data completed.")
+    progress_callback("Fetching Sales Summary data completed.")
 
-def fetch_missing_tech_data(view):
+def fetch_missing_tech_data(view, stop_requested, progress_callback):
     store_type = view.store_type_combo.currentText()
     start_date = view.start_date_edit.date().toPyDate()
     end_date = view.end_date_edit.date().toPyDate()
@@ -71,22 +83,28 @@ def fetch_missing_tech_data(view):
     if store_type == "All" or store_type == "Midas":
         tech_midas = get_missing_midas_tech_dates(start_date, end_date, MIDAS_STORE_NUMBERS, 'midas_tech_summary')
         if not tech_midas:
-            print("Tech data for Midas is up to date.")
+            progress_callback("Tech data for Midas is up to date.")
         else:
-            generate_midas_reports(None, tech_midas, None)
-            print("Midas Tech Data:", tech_midas)
+            progress_callback(f"Fetching Midas Tech Data: {tech_midas}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_midas_reports(None, tech_midas, None, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         tech_bigo = get_missing_bigo_tech_dates(start_date, end_date, 'bigo_tech_summary')
         if not tech_bigo:
-            print("Tech data for Bigo is up to date.")
+            progress_callback("Tech data for Bigo is up to date.")
         else:
-            generate_bigo_reports(None, tech_bigo, None)
-            print("Bigo Tech Data:", tech_bigo)
+            progress_callback(f"Fetching Bigo Tech Data: {tech_bigo}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_bigo_reports(None, tech_bigo, None, stop_requested, progress_callback)
 
-    print("Fetching Tech data completed.")
+    progress_callback("Fetching Tech data completed.")
 
-def fetch_missing_timesheet_data(view):
+def fetch_missing_timesheet_data(view, stop_requested, progress_callback):
     store_type = view.store_type_combo.currentText()
     start_date = view.start_date_edit.date().toPyDate()
     end_date = view.end_date_edit.date().toPyDate()
@@ -94,21 +112,27 @@ def fetch_missing_timesheet_data(view):
     end_date_str = end_date.strftime('%Y-%m-%d')
 
     if store_type == "All" or store_type == "Midas":
-        print("Fetching Midas Timesheet Data")
+        progress_callback("Fetching Midas Timesheet Data")
         timesheet_midas = {store: [(start_date_str, end_date_str)] for store in MIDAS_STORE_NUMBERS}
         if not any(timesheet_midas.values()):
-            print("Timesheet data for Midas is up to date.")
+            progress_callback("Timesheet data for Midas is up to date.")
         else:
-            generate_midas_reports(None, None, timesheet_midas)
-            print("Midas Timesheet Data:", timesheet_midas)
+            progress_callback(f"Midas Timesheet Data: {timesheet_midas}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_midas_reports(None, None, timesheet_midas, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
-        print("Fetching Bigo Timesheet Data")
+        progress_callback("Fetching Bigo Timesheet Data")
         timesheet_bigo = [(start_date_str, end_date_str)]
         if not timesheet_bigo:
-            print("Timesheet data for Bigo is up to date.")
+            progress_callback("Timesheet data for Bigo is up to date.")
         else:
-            generate_bigo_reports(None, None, timesheet_bigo)
-            print("Bigo Timesheet Data:", timesheet_bigo)
+            progress_callback(f"Bigo Timesheet Data: {timesheet_bigo}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_bigo_reports(None, None, timesheet_bigo, stop_requested, progress_callback)
 
-    print("Fetching Timesheet data completed.")
+    progress_callback("Fetching Timesheet data completed.")
