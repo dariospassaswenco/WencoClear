@@ -49,6 +49,11 @@ def query_sales_summary_data(start_date, end_date, store_type):
         traceback.print_exc()
         return create_empty_dataframe(start_date, end_date, [])
 
+import pandas as pd
+from sqlalchemy import create_engine
+from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS, create_empty_dataframe
+import traceback
+
 def query_tech_data(start_date, end_date, store_type):
     try:
         if store_type == "Midas":
@@ -61,7 +66,7 @@ def query_tech_data(start_date, end_date, store_type):
         elif store_type == "Bigo":
             stores = [f"Bigo {store}" for store in BIGO_STORE_NUMBERS]
             query = f"""
-            SELECT NULL AS wenco_id, date, last_name
+            SELECT date, last_name
             FROM bigo_tech_summary
             WHERE date BETWEEN '{start_date}' AND '{end_date}'
             """
@@ -74,13 +79,22 @@ def query_tech_data(start_date, end_date, store_type):
         # Create an empty dataframe
         empty_df = create_empty_dataframe(start_date, end_date, stores)
 
-        # Populate the dataframe with query results
-        for _, row in result_df.iterrows():
-            store = f"{store_type} {row['wenco_id']}" if row['wenco_id'] else store_type
-            date = row['date']
-            value = row['last_name']
-            if store in empty_df.index and date in empty_df.columns:
-                empty_df.at[store, date] = value
+        if store_type == "Midas":
+            # Populate the dataframe with query results for Midas
+            for _, row in result_df.iterrows():
+                store = f"{store_type} {row['wenco_id']}"
+                date = row['date']
+                value = row['last_name']
+                if store in empty_df.index and date in empty_df.columns:
+                    empty_df.at[store, date] = value
+        elif store_type == "Bigo":
+            # Populate the dataframe with query results for Bigo
+            for _, row in result_df.iterrows():
+                date = row['date']
+                value = row['last_name']
+                for store in stores:
+                    if date in empty_df.columns:
+                        empty_df.at[store, date] = value
 
         print(f"Query result (formatted): {empty_df.shape}\n{empty_df.head()}")  # Debug statement
         return empty_df
@@ -88,6 +102,20 @@ def query_tech_data(start_date, end_date, store_type):
         print(f"Error querying tech data: {e}")
         traceback.print_exc()
         return create_empty_dataframe(start_date, end_date, [])
+
+# Test function
+def test_query_tech_data():
+    print("Testing Tech Data Query...")
+    start_date = '2024-06-01'
+    end_date = '2024-06-08'
+    result_df = query_tech_data(start_date, end_date, 'Midas')
+    print(f"Test Tech Data Result for Midas:\n{result_df}")
+    result_df = query_tech_data(start_date, end_date, 'Bigo')
+    print(f"Test Tech Data Result for Bigo:\n{result_df}")
+
+if __name__ == "__main__":
+    test_query_tech_data()
+
 
 def query_timesheet_data(start_date, end_date, store_type):
     try:
