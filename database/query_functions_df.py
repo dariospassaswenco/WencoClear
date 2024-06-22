@@ -3,6 +3,8 @@ from sqlalchemy import create_engine
 from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS
 import traceback
 
+""" These functions are mostly for the UI for datacheckup view. I dont think they really have any other use because they are so specific for it """
+
 def create_empty_dataframe(start_date, end_date, stores):
     date_range = pd.date_range(start=start_date, end=end_date)
     columns = [date.strftime('%Y-%m-%d') for date in date_range]

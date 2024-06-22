@@ -3,9 +3,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget, 
 from PyQt5.QtGui import QIcon
 from views.main_menu import MainMenu
 from views.data_checkup_view.data_checkup_view import DataCheckupView
-from views.configure_view import ConfigureView
+from views.configure.configure_view import ConfigureView
 from views.timesheets_view import TimesheetsView
 from views.manage_employees.manage_employees_view import ManageEmployeesView
+from views.manage_goals.manage_goals_view import ManageGoalsView  # Import the new view
 import os
 
 class DataManagerGUI(QMainWindow):
@@ -27,12 +28,14 @@ class DataManagerGUI(QMainWindow):
         self.configure_view = ConfigureView(self.stacked_widget)
         self.timesheets_view = TimesheetsView(self.stacked_widget)
         self.manage_employees_view = ManageEmployeesView(self.stacked_widget)
+        self.manage_goals_view = ManageGoalsView(self.stacked_widget)  # Initialize the new view
 
         self.stacked_widget.addWidget(self.main_menu)
         self.stacked_widget.addWidget(self.data_checkup_view)
         self.stacked_widget.addWidget(self.configure_view)
         self.stacked_widget.addWidget(self.timesheets_view)
         self.stacked_widget.addWidget(self.manage_employees_view)
+        self.stacked_widget.addWidget(self.manage_goals_view)  # Add the new view to the stacked widget
 
         central_widget = QWidget()
         central_layout = QVBoxLayout()
