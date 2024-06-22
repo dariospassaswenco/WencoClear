@@ -1,11 +1,14 @@
 from PyQt5.QtCore import QDate, Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QTextCharFormat
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, QTableWidget, QTextEdit
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, \
+    QTableWidget, QTextEdit, QSizePolicy
 from .helpers import run_data_checkup
 from views.fetch_worker import FetchWorker
-from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, fetch_missing_timesheet_data
+from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, \
+    fetch_missing_timesheet_data
 from .display_functions import display_sales_summary_data, display_tech_data, display_timesheet_data, display_all_data
 from config.app_settings import CLOSED_DAYS
+
 
 class DataCheckupView(QWidget):
     def __init__(self, stacked_widget, parent=None):
@@ -41,10 +44,12 @@ class DataCheckupView(QWidget):
         # Set default week range
         self.set_default_week_range()
 
-        # Fetch all missing button
+        # Fetch all missing button (initially hidden)
         self.fetch_all_missing_button = QPushButton("Fetch All Missing Data")
         self.fetch_all_missing_button.setStyleSheet("background-color: lightgreen; font-weight: bold;")
         self.fetch_all_missing_button.clicked.connect(self.start_fetch_all_missing_data)
+        self.fetch_all_missing_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.fetch_all_missing_button.setMaximumWidth(self.width() // 4)
         layout.addWidget(self.fetch_all_missing_button)
 
         # Tab widget
@@ -72,6 +77,7 @@ class DataCheckupView(QWidget):
 
         self.tab_widget.currentChanged.connect(self.on_tab_change)
         self.update_calendar()
+        self.on_tab_change(self.tab_widget.currentIndex())  # Call to set the initial state
 
     def create_date_edit(self):
         date_edit = QDateEdit()
@@ -119,14 +125,18 @@ class DataCheckupView(QWidget):
         layout.addWidget(results_table)
 
         # Fetch buttons
+        fetch_layout = QHBoxLayout()
+        fetch_layout.addStretch()  # Add stretch to push button to the right
+
         if report_type != "All Reports":
             fetch_missing_button = QPushButton(f"Fetch Missing {report_type} Data")
             fetch_missing_button.setStyleSheet("background-color: lightgrey; font-weight: bold;")
+            fetch_missing_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            fetch_missing_button.setMaximumWidth(self.width() // 2)
             fetch_missing_button.clicked.connect(lambda: self.start_fetch_missing_data(report_type))
-            fetch_layout = QHBoxLayout()
             fetch_layout.addWidget(fetch_missing_button)
-            layout.addLayout(fetch_layout)
 
+        layout.addLayout(fetch_layout)
         widget.setLayout(layout)
         return widget, results_table
 
@@ -202,5 +212,8 @@ class DataCheckupView(QWidget):
         current_tab = self.tab_widget.tabText(index)
         if current_tab == "All Reports":
             self.store_type_combo.hide()
+            self.fetch_all_missing_button.show()
         else:
             self.store_type_combo.show()
+            self.fetch_all_missing_button.hide()
+
