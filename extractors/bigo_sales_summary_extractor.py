@@ -15,17 +15,41 @@ class BigoSalesSummaryExtractor:
 
             bigo_summary = BigoSalesSummary(wenco_id=store_number)
 
-            # Read Excel file into DataFrame
-            df_test = pd.read_excel(file_path, engine="xlrd", skiprows=0, usecols=[0, 34])
-            df_test.columns = ['Store_or_Category', 'Total Sales']
-            # Locate row with Total Sales
-            sales_group = df_test.loc[df_test['Store_or_Category'] == 'Sales Group']
-            nan_test = sales_group['Total Sales'].iloc[0]
-            # Extract required values for Revenue
-            if nan_test == "Total Sales":
+            # Function to check which column contains 'Total Sales'
+            def check_total_sales_column(file_path):
+                df_test = pd.read_excel(file_path, engine="xlrd", skiprows=0, usecols=[0, 34, 35])
+                df_test.columns = ['Store_or_Category', 'Total Sales 34', 'Total Sales 35']
+                sales_group = df_test.loc[df_test['Store_or_Category'] == 'Sales Group']
+
+                if not sales_group.empty:
+                    if 'Total Sales' in sales_group['Total Sales 34'].values:
+                        return 34
+                    elif 'Total Sales' in sales_group['Total Sales 35'].values:
+                        return 35
+                    else:
+                        return 36
+                raise ValueError("Total Sales not found in columns 34, 35, or 36")
+
+            try:
+                total_sales_column = check_total_sales_column(file_path)
+            except ValueError as e:
+                print(e)
+                return pd.DataFrame()
+
+            # Extract required values for Revenue based on the column with 'Total Sales'
+            if total_sales_column == 34:
                 df = pd.read_excel(file_path, engine="xlrd", skiprows=0, usecols=[0, 6, 7, 11, 16, 20, 29, 33])
-            else:
+                #print("First instance (Total Sales in column 34)")
+            elif total_sales_column == 35:
                 df = pd.read_excel(file_path, engine="xlrd", skiprows=0, usecols=[0, 6, 8, 12, 17, 21, 30, 34])
+                #print("Second instance (Total Sales in column 35)")
+            elif total_sales_column == 36:
+                df = pd.read_excel(file_path, engine="xlrd", skiprows=0, usecols=[0, 7, 9, 13, 18, 22, 31, 35])
+                #print("Third instance (Total Sales in column 36)")
+            else:
+                raise ValueError("Unexpected column for Total Sales")
+
+            #print(df)
 
             # Rename the columns for better understanding
             df.columns = ['Store_or_Category', 'Car Count', 'Parts Quantity',
@@ -43,7 +67,7 @@ class BigoSalesSummaryExtractor:
                 car_count = df.loc[df['Store_or_Category'] == 'Car Count']
                 bigo_summary.car_count = int(car_count['Car Count'].iloc[0])
             except Exception as e:
-                pass  # If not found, keep Tire Count as 0
+                pass  # If not found, keep Car Count as 0
 
             # Locate row with Parts Quantity for Tire Count
             try:
@@ -86,18 +110,22 @@ class BigoSalesSummaryExtractor:
             except Exception as e:
                 pass
 
+            #print(bigo_summary)
+
             # Convert to dictionary for dataframe
             result = bigo_summary.__dict__
             df = pd.DataFrame([result])
 
             conditions_for_empty_or_zero = (
-                (df['total_revenue_w_supplies'].isnull() | (df['total_revenue_w_supplies'] == 0)).all() and
-                (df['car_count'].isnull() | (df['car_count'] == 0)).all()
+                    (df['total_revenue_w_supplies'].isnull() | (df['total_revenue_w_supplies'] == 0)).all() and
+                    (df['car_count'].isnull() | (df['car_count'] == 0)).all()
             )
 
             if conditions_for_empty_or_zero:
+                print("returning empty dataframe")
                 return pd.DataFrame()
             else:
+                print(df)
                 return df
 
         except Exception as e:
@@ -113,3 +141,11 @@ class BigoSalesSummaryExtractor:
                 print(
                     f"Query executed: DELETE FROM {BIGO_SS_TABLE} WHERE wenco_id = :wenco_id AND date = :date with params wenco_id={row['wenco_id']} and date={row['date']}")
                 print(f"Number of rows deleted: {result.rowcount}")
+
+
+# Test the function
+if __name__ == "__main__":
+    file_path = r"C:\Users\Wenco\Documents\WencoClearOutputs\BGO_14_SS_2024-06-20.XLS"
+    extractor = BigoSalesSummaryExtractor()
+    df = extractor.extract_ss_data(file_path)
+    print(df)
