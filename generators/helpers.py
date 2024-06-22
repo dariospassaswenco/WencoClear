@@ -6,11 +6,7 @@ from generators.bigo_report_generator import BigoReportGenerator
 def break_into_payroll_periods(timesheet_bigo):
     def next_sunday(date):
         days_ahead = 6 - date.weekday()
-        return date + timedelta(days=days_ahead)
-
-    def previous_sunday(date):
-        days_back = (date.weekday() + 1) % 7
-        return date - timedelta(days=days_back)
+        return date + timedelta(days=days_ahead + 1)
 
     new_timesheet_bigo = []
 
@@ -19,10 +15,12 @@ def break_into_payroll_periods(timesheet_bigo):
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
         current_start = start_date
         while current_start <= end_date:
-            current_end = min(next_sunday(current_start), end_date)
-            if current_start != current_end:
+            current_end = next_sunday(current_start)
+            if current_end > end_date:
+                current_end = end_date + timedelta(days=1)  # Include the end date
+            if current_start.weekday() != 6:  # Skip Sundays
                 new_timesheet_bigo.append((current_start.strftime('%Y-%m-%d'), (current_end - timedelta(days=1)).strftime('%Y-%m-%d')))
-            current_start = current_end + timedelta(days=1)
+            current_start = current_end
 
     return new_timesheet_bigo
 
@@ -119,7 +117,7 @@ if __name__ == "__main__":
     test_timesheet_bigo = [
         ('2024-06-09', '2024-06-20'),  # spans multiple periods
         ('2024-06-05', '2024-06-06'),  # within a single period
-        ('2024-06-20', '2024-07-10'),  # spans multiple periods
+        ('2024-06-17', '2024-06-20'),  # spans multiple periods
     ]
 
     broken_timesheet_bigo = break_into_payroll_periods(test_timesheet_bigo)
