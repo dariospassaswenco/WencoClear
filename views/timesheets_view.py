@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QDateEdit, QTableWidget, QTableWidgetItem, QTextEdit
-from PyQt5.QtCore import QDate, QThread, pyqtSignal
+from PyQt5.QtCore import QDate, QThread
 import pandas as pd
 from datetime import datetime
 import os
 from database.timesheet_data import get_midas_timesheet_data, get_bigo_timesheet_data, get_oldest_date_entered
 from excel.export_timesheet import export_timesheet_data
-from views.fetch_worker import FetchWorker
-from config.app_settings import EXCELEXPORT, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS
+from views.assets.fetch_worker import FetchWorker
+from config.app_settings import EXCELEXPORT, MIDAS_STORE_NUMBERS
 from generators.helpers import generate_midas_reports, generate_bigo_reports
 
 class TimesheetsView(QWidget):

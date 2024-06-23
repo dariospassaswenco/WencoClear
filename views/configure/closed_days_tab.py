@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QTableWidget, QTableWidgetItem, QMessageBox
 from PyQt5.QtCore import Qt
 import pandas as pd
 from database.closed_days import get_all_closed_days, update_closed_days  # Replace 'your_query_module' with the actual module name
@@ -45,6 +45,7 @@ def add_closed_day(closed_days_table):
     closed_days_table.insertRow(row_position)
     closed_days_table.setItem(row_position, 0, QTableWidgetItem("YYYY-MM-DD"))
     closed_days_table.setItem(row_position, 1, QTableWidgetItem("Reason"))
+    show_restart_message()
 
 def save_closed_days(closed_days_table, configure_view):
     rows = closed_days_table.rowCount()
@@ -61,3 +62,12 @@ def save_closed_days(closed_days_table, configure_view):
     df = pd.DataFrame(data, columns=["date", "reason"])
     update_closed_days(df)
     configure_view.append_log("Closed days updated successfully.")
+    show_restart_message()
+
+def show_restart_message():
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Information)
+    msg.setText("Changes to closed days will take effect after restarting the program.")
+    msg.setWindowTitle("Restart Required")
+    msg.setStandardButtons(QMessageBox.Ok)
+    msg.exec_()

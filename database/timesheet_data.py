@@ -67,6 +67,34 @@ def get_oldest_date_entered(start_date, end_date):
         result = conn.execute(query, {'start_date': start_date, 'end_date': end_date}).fetchone()
     return result if result else None
 
+def remove_duplicates_from_timesheets():
+    # Define the query to find duplicates in Midas timesheet
+    midas_duplicates_query = text("""
+        DELETE FROM midas_timesheet
+        WHERE rowid NOT IN (
+            SELECT MIN(rowid)
+            FROM midas_timesheet
+            GROUP BY wenco_id, date, first_name, last_name
+        )
+    """)
+
+    # Define the query to find duplicates in Bigo timesheet
+    bigo_duplicates_query = text("""
+        DELETE FROM bigo_timesheet
+        WHERE rowid NOT IN (
+            SELECT MIN(rowid)
+            FROM bigo_timesheet
+            GROUP BY wenco_id, date, first_name, last_name
+        )
+    """)
+
+    with ENGINE.connect() as conn:
+        # Execute the queries to remove duplicates
+        conn.execute(midas_duplicates_query)
+        conn.execute(bigo_duplicates_query)
+        conn.commit()
+
+    print("Duplicates removed from both Midas and Bigo timesheets.")
 
 def test_timesheet_data():
     start_date = '2024-06-01'
@@ -92,4 +120,4 @@ def test_timesheet_data():
 
 
 if __name__ == "__main__":
-    test_timesheet_data()
+    remove_duplicates_from_timesheets()
