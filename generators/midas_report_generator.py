@@ -7,7 +7,7 @@ from config.pos_config import midas_config
 from config.app_settings import *
 from database.ss_data import get_missing_ss_dates
 from database.tech_data import get_missing_midas_tech_dates
-from database.timesheet_data import get_missing_timesheet_dates
+from database.timesheet_data import delete_midas_timesheet_entries
 
 class MidasReportGenerator(ReportGenerator):
     def __init__(self):
@@ -67,6 +67,7 @@ class MidasReportGenerator(ReportGenerator):
                 self.actions.enter_filename(file_name)
                 self.actions.enter_file_destination()
                 self.actions.cleanup_and_close()
+                delete_midas_timesheet_entries(store_number, start_date_str, end_date_str)
             self.extractor.extract_reports()
 
 

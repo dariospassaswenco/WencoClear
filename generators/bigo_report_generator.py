@@ -6,7 +6,7 @@ from navigation.navex_basic_navigation import BigoNavigation
 from config.pos_config import bigo_config
 from config.app_settings import *
 from database.ss_data import get_missing_ss_dates
-from database.tech_data import get_missing_bigo_tech_dates
+from database.timesheet_data import delete_bigo_timesheet_entries
 
 class BigoReportGenerator(ReportGenerator):
     def __init__(self):
@@ -58,6 +58,7 @@ class BigoReportGenerator(ReportGenerator):
             self.actions.ts_select_employees()
             self.actions.wait_for_report_to_compile()
             self.actions.cleanup_and_close(end_date_str)
+            delete_bigo_timesheet_entries(start_date_str, end_date_str)
         self.extractor.extract_reports()
 
 

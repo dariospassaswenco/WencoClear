@@ -51,6 +51,25 @@ def get_bigo_timesheet_data(start_date, end_date):
     columns = ['store_id', 'date', 'date_entered', 'first_name', 'last_name', 'hours']
     return pd.DataFrame(data, columns=columns)
 
+
+def delete_midas_timesheet_entries(store_id, start_date, end_date):
+    query = text("""
+        DELETE FROM midas_timesheet
+        WHERE wenco_id = :store_id
+        AND date BETWEEN :start_date AND :end_date
+    """)
+    with ENGINE.connect() as conn:
+        conn.execute(query, {'store_id': store_id, 'start_date': start_date, 'end_date': end_date})
+
+def delete_bigo_timesheet_entries(start_date, end_date):
+    query = text("""
+        DELETE FROM bigo_timesheet
+        WHERE date BETWEEN :start_date AND :end_date
+    """)
+    with ENGINE.connect() as conn:
+        conn.execute(query, {'start_date': start_date, 'end_date': end_date})
+
+
 def get_oldest_date_entered(start_date, end_date):
     query = text("""
         SELECT wenco_id, last_name, first_name, MIN(date_entered) AS oldest_date_entered
