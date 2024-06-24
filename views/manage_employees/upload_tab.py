@@ -7,7 +7,7 @@ from PyQt5.QtCore import QThread
 from config.app_settings import CLEAR_DATABASE_PATH
 from excel.read_employees import read_employees
 from database.employees import insert_employees
-from views.assets.fetch_worker import FetchWorker
+from views.fetch_worker import FetchWorker
 
 class UploadTab(QWidget):
     def __init__(self):

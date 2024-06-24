@@ -3,7 +3,7 @@ from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton, QLabel, QDateEdit, QComboBox, \
     QTableWidget, QTextEdit, QSizePolicy
 from .helpers import run_data_checkup
-from views.assets.fetch_worker import FetchWorker
+from views.fetch_worker import FetchWorker
 from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, \
     fetch_missing_timesheet_data
 from config.app_settings import CLOSED_DAYS

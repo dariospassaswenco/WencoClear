@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 from database.timesheet_data import get_midas_timesheet_data, get_bigo_timesheet_data, get_oldest_date_entered
 from excel.export_timesheet import export_timesheet_data
-from views.assets.fetch_worker import FetchWorker
+from views.fetch_worker import FetchWorker
 from config.app_settings import EXCELEXPORT, MIDAS_STORE_NUMBERS
 from generators.helpers import generate_midas_reports, generate_bigo_reports
 
