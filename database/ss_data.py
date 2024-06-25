@@ -5,15 +5,12 @@ from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE, BIG
 
 
 def get_missing_ss_dates(start_date, end_date, store_numbers, table_name):
-    print(start_date)
-    print(end_date)
     try:
         missing_dates_per_store = {store: [] for store in store_numbers}
         date_range = pd.date_range(start=start_date, end=end_date)
 
         for date in date_range:
             date_str = date.strftime('%Y-%m-%d')
-            print(date_str)
             if date_str in CLOSED_DAYS or date.weekday() == 6:  # Skip closed days and Sundays
                 continue
             for store_number in store_numbers:

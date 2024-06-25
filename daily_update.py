@@ -14,11 +14,11 @@ def midas_daily_update(end_date, start_date):
     end_date_str = end_date.strftime('%Y-%m-%d')
 
     midas_missing_ss = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
-    print(midas_missing_ss)
+    print(f"midas missing ss: {midas_missing_ss}")
     midas_missing_tech = get_missing_midas_tech_dates(start_date, end_date, MIDAS_STORE_NUMBERS, 'midas_tech_summary')
-    print(midas_missing_tech)
+    print(f"midas missing tech: {midas_missing_tech}")
     timesheet_midas = {store: [(start_date_str, end_date_str)] for store in MIDAS_STORE_NUMBERS}
-    print(timesheet_midas)
+    print(f"midas timesheet: {timesheet_midas}")
 
     midas_generator = MidasReportGenerator()
     midas_generator.prepare_pos()
@@ -40,10 +40,12 @@ def bigo_daily_update(end_date, start_date):
 
     # Check for missing sales summary data
     bigo_missing_ss = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
+    print(f"bigo missing ss: {bigo_missing_ss}")
     bigo_missing_tech = get_missing_bigo_tech_dates(start_date, end_date, 'bigo_tech_summary')
-    print(bigo_missing_tech)
+    print(f"bigo missing tech: {bigo_missing_tech}")
     timesheet_bigo = [(start_date_str, end_date_str)]
     timesheet_bigo = break_into_payroll_periods(timesheet_bigo)
+    print(f"bigo timesheet: {timesheet_bigo}")
 
     bigo_generator = BigoReportGenerator()
     bigo_generator.prepare_pos()
@@ -63,20 +65,21 @@ def bigo_daily_update(end_date, start_date):
 
 def run_daily_update():
     # Get the current date and the date a week prior
-    end_date = datetime.today().date()
+    end_date = datetime.today().date() - timedelta(days=1)
     start_date = end_date - timedelta(days=7)
+    print(f"Updating reports for date range {start_date} to {end_date}")
 
     try:
-        midas_daily_update(end_date, start_date)
+        midas_daily_update(start_date, end_date)
     except Exception as e:
         print(f"Error generating Midas reports: {e}. Retrying...")
-        midas_daily_update(end_date, start_date)
+        midas_daily_update(start_date, end_date)
 
     try:
-        bigo_daily_update(end_date, start_date)
+        bigo_daily_update(start_date, end_date)
     except Exception as e:
         print(f"Error generating Bigo reports: {e}. Retrying...")
-        bigo_daily_update(end_date, start_date)
+        bigo_daily_update(start_date, end_date)
 
 if __name__ == "__main__":
     run_daily_update()
