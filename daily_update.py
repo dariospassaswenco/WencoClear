@@ -9,7 +9,7 @@ from generators.helpers import break_into_payroll_periods
 from generators.bigo_report_generator import BigoReportGenerator
 
 
-def midas_daily_update(end_date, start_date):
+def midas_daily_update(start_date, end_date):
     start_date_str = start_date.strftime('%Y-%m-%d')
     end_date_str = end_date.strftime('%Y-%m-%d')
 
@@ -34,7 +34,7 @@ def midas_daily_update(end_date, start_date):
     midas_generator.actions.app.kill()
     print("Midas reports updated successfully")
 
-def bigo_daily_update(end_date, start_date):
+def bigo_daily_update(start_date, end_date):
     start_date_str = start_date.strftime('%Y-%m-%d')
     end_date_str = end_date.strftime('%Y-%m-%d')
 
