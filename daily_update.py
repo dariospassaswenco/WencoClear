@@ -65,7 +65,7 @@ def bigo_daily_update(start_date, end_date):
 
 def run_daily_update():
     # Get the current date and the date a week prior
-    end_date = datetime.today().date() - timedelta(days=1)
+    end_date = datetime.today().date()
     start_date = end_date - timedelta(days=7)
     print(f"Updating reports for date range {start_date} to {end_date}")
 
