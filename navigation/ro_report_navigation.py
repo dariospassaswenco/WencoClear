@@ -120,11 +120,12 @@ class MidasReportActions(ReportActions):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
             window.print_ctrl_ids()
-            sba_report = window.child_window(title="Sales By Category", control_type="ListItem")
+            sba_report = window.child_window(title="Sales By Category", control_type="ListItem", found_index=0)
             sba_report.double_click_input()
             print("Sales By Category Report Selected")
             self.enter_password()
-        self.perform_action_with_retry(action)
+        #self.perform_action_with_retry(action)
+        action()
 
     def ts_select_employees(self):
         def action():
