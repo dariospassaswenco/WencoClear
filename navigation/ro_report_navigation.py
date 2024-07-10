@@ -119,6 +119,7 @@ class MidasReportActions(ReportActions):
     def sba_select_sba_report(self):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
+            window.print_ctrl_ids()
             sba_report = window.child_window(title="Sales By Category", control_type="ListItem")
             sba_report.double_click_input()
             print("Sales By Category Report Selected")
