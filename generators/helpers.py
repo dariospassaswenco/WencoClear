@@ -72,7 +72,7 @@ def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sba_midas, sto
     except Exception as e:
         progress_callback(f"Error generating Midas reports: {e}. Retrying...")
         midas_generator.restart_pos()
-        generate_midas_reports(ss_midas, tech_midas, timesheet_midas, stop_requested, progress_callback)
+        generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sba_midas, stop_requested, progress_callback)
 
     midas_generator.actions.app.kill()  # Close POS
     progress_callback("Midas Reports Generated.")
