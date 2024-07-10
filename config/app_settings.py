@@ -44,6 +44,7 @@ EXCELEXPORT = config['OUTPUTS']['excelexportpath']
 MIDAS_SALES_SUMMARIES_DIR = config['Midas']['salessummariesdir']
 MIDAS_TIMESHEETS_DIR = config['Midas']['timesheetsdir']
 MIDAS_TECH_REPORTS_DIR = config['Midas']['techreportsdir']
+MIDAS_SBA_REPORTS_DIR = config['Midas']['sbareportsdir']
 
 BIGO_SALES_SUMMARIES_DIR = config['Bigo']['salessummariesdir']
 BIGO_TIMESHEETS_DIR = config['Bigo']['timesheetsdir']
@@ -57,6 +58,7 @@ BIGO_FILENAME_PATTERN = 'BGO_{store_number}_{report_type}_{date}.XLS'
 MIDAS_SS_TABLE = "midas_sales_summary"
 MIDAS_TIMESHEET_TABLE = "midas_timesheet"
 MIDAS_TECH_TABLE = "midas_tech_summary"
+MIDAS_SBA_TABLE = "midas_sales_by_category"
 
 BIGO_SS_TABLE = "bigo_sales_summary"
 BIGO_TIMESHEET_TABLE = "bigo_timesheet"

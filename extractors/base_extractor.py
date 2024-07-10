@@ -28,6 +28,7 @@ class ReportExtractor:
                     print(f"Processing: {file_name}")
                     extractor.set_report_attributes(report_type)
                     df = extractor.process_file(os.path.join(self.folder_path, file_name))
+                    print(df)
                     if df is not None and not df.empty:
                         cleaned_df = extractor.clean_data_frame(df)
                         extractor.delete_existing_records(cleaned_df, report_type)
@@ -46,6 +47,8 @@ class ReportExtractor:
             return 'timesheet'
         elif "_tech_" in file_name:
             return 'tech'
+        elif "_sba_" in file_name:
+            return 'sba'
         return None
 
     def clean_data_frame(self, df):

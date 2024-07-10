@@ -20,6 +20,12 @@ class MidasSalesByCategoryExtractor:
         "X-NON ROYALTY", "X-TIRES"
     ]
 
+    CATEGORY_MAPPINGS = {
+        "15K SYSTEM": "15K SYSTEM GUARANTEE",
+        "FREE ALIGNMENT": "FREE ALIGNMENT CHECK",
+        # Add more mappings as needed
+    }
+
     @staticmethod
     def extract_sales_by_category_data(file_path):
         with pdfplumber.open(file_path) as pdf:
@@ -70,36 +76,44 @@ class MidasSalesByCategoryExtractor:
 
     @staticmethod
     def parse_line(line, date, wenco_id):
-        for category in MidasSalesByCategoryExtractor.CATEGORIES:
-            if category in line:
-                pattern = r"(\d+\.\d+)\s+(\d+\.\d+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)%\s+\$([\d,().-]+)"
-                match = re.search(pattern, line)
-                if match:
-                    print(match)  # Keep this for debugging
-                    values = [MidasSalesByCategoryExtractor.clean_number(v) for v in match.groups()]
+        pattern = r"(\S+(?:\s+\S+)*)\s+(\d+\.\d+)\s+(\d+\.\d+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)\s+([\d,().-]+)%\s+\$([\d,().-]+)"
+        match = re.search(pattern, line)
+        if match:
+            category = match.group(1)
+            values = [MidasSalesByCategoryExtractor.clean_number(v) for v in match.groups()[1:]]
 
-                    if len(values) == 13:
-                        return MidasSalesByCategory(
-                            wenco_id=wenco_id,
-                            category=category,
-                            date=date,
-                            jobs=values[0],
-                            time=values[1],
-                            labor=values[2],
-                            parts=values[3],
-                            other=values[4],
-                            total=values[5],
-                            stock=values[6],
-                            inv=values[7],
-                            non_stock=values[8],
-                            sublet=values[9],
-                            labor_costs=values[10],
-                            costs=values[11],
-                            profit=values[11],  # Using costs as profit, adjust if needed
-                            job_avg=values[12]
-                        )
-                    else:
-                        print(f"Unexpected number of values for category {category}: {len(values)}")
+            # Check if the category needs to be mapped to a full category name
+            for partial, full in MidasSalesByCategoryExtractor.CATEGORY_MAPPINGS.items():
+                if partial in category:
+                    category = full
+                    break
+
+            # If the category is not in the CATEGORIES list, skip this line
+            if category not in MidasSalesByCategoryExtractor.CATEGORIES:
+                return None
+
+            if len(values) == 13:
+                return MidasSalesByCategory(
+                    wenco_id=wenco_id,
+                    category=category,
+                    date=date,
+                    jobs=values[0],
+                    time=values[1],
+                    labor=values[2],
+                    parts=values[3],
+                    other=values[4],
+                    total=values[5],
+                    stock=values[6],
+                    inv=values[7],
+                    non_stock=values[8],
+                    sublet=values[9],
+                    labor_costs=values[10],
+                    costs=values[11],
+                    profit=values[11],  # Using costs as profit, adjust if needed
+                    job_avg=values[12]
+                )
+            else:
+                print(f"Unexpected number of values for category {category}: {len(values)}")
         return None
 
     @staticmethod

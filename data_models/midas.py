@@ -39,3 +39,22 @@ class MidasTechSummary:
     car_count: int = 0
     total_revenue: float = 0.0
 
+@dataclass
+class MidasSalesByCategory:
+    wenco_id: int = 0
+    category: str = ""
+    date: str = ""
+    jobs: float = 0.0
+    time: float = 0.0
+    labor: float = 0.0
+    parts: float = 0.0
+    other: float = 0.0
+    total: float = 0.0
+    stock: float = 0.0
+    inv: float = 0.0
+    non_stock: float = 0.0
+    sublet: float = 0.0
+    labor_costs: float = 0.0
+    costs: float = 0.0
+    profit: float = 0.0
+    job_avg: float = 0.0
