@@ -28,7 +28,7 @@ def fetch_all_missing_data(view, stop_requested, progress_callback):
             if stop_requested():
                 progress_callback("Fetch canceled.")
                 return
-            generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sales_by_category_midas, progress_callback)
+            generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sales_by_category_midas, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         progress_callback("Fetching Bigo Data")
