@@ -126,7 +126,7 @@ class MidasReportActions(ReportActions):
                 list_box.wheel_mouse_input(wheel_dist=1)
                 try:
                     sales_by_category = list_box.child_window(title="Sales by Category", control_type="ListItem")
-                    sales_by_category.click_input()
+                    sales_by_category.double_click_input()
                     return
                 except:
                     pass
