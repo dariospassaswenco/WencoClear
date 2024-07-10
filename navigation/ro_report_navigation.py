@@ -111,6 +111,7 @@ class MidasReportActions(ReportActions):
         def action():
             time.sleep(2)
             send_keys("Sal")
+            send_keys("{ENTER}")
             print("typed keys")
 
         self.perform_action_with_retry(action)
