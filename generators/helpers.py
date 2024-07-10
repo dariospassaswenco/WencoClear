@@ -24,7 +24,7 @@ def break_into_payroll_periods(timesheet_bigo):
 
     return new_timesheet_bigo
 
-def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, stop_requested, progress_callback):
+def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sba_midas, stop_requested, progress_callback):
     midas_generator = MidasReportGenerator()
     progress_callback("Preparing Midas POS...")
     midas_generator.prepare_pos()
@@ -59,6 +59,16 @@ def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, stop_requested
                         return
                     progress_callback(f"Generating Timesheet Report for store {store} from {date_range[0]} to {date_range[1]}")
             midas_generator.generate_timesheet_reports(timesheet_midas)
+
+        if sba_midas:
+            for store, dates in ss_midas.items():
+                for date in dates:
+                    if stop_requested():
+                        progress_callback("Fetch canceled.")
+                        return
+                    progress_callback(f"Generating Sales By Category Report for store {store} on date {date}")
+            midas_generator.generate_sales_by_category_reports(ss_midas)
+
     except Exception as e:
         progress_callback(f"Error generating Midas reports: {e}. Retrying...")
         midas_generator.restart_pos()

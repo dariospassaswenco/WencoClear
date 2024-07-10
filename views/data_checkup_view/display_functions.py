@@ -2,7 +2,7 @@ from datetime import datetime
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem
 from config.app_settings import *
-from database.query_functions_df import query_sales_summary_data, query_tech_data, query_timesheet_data
+from database.query_functions_df import query_sales_summary_data, query_tech_data, query_timesheet_data, query_sales_by_category_data
 import pandas as pd
 import traceback
 
@@ -113,7 +113,6 @@ def display_timesheet_data(view, start_date, end_date, results_table):
     display_dataframe(view, df, results_table)
 
 def display_all_data(view, start_date, end_date, results_table):
-    store_type = view.store_type_combo.currentText()
     stores = filter_stores_by_type("All")
     df = create_empty_dataframe(start_date, end_date, stores)
 
@@ -123,6 +122,7 @@ def display_all_data(view, start_date, end_date, results_table):
     data_df_bigo_tech = query_tech_data(start_date, end_date, "Bigo")
     data_df_midas_timesheet = query_timesheet_data(start_date, end_date, "Midas")
     data_df_bigo_timesheet = query_timesheet_data(start_date, end_date, "Bigo")
+    data_df_midas_sales_by_category = query_sales_by_category_data(start_date, end_date, "Midas")
 
     df_sales = create_empty_dataframe(start_date, end_date, stores)
     df_sales = merge_dataframes(df_sales, data_df_midas_sales, 'revenue')
@@ -136,22 +136,34 @@ def display_all_data(view, start_date, end_date, results_table):
     df_timesheet = merge_dataframes(df_timesheet, data_df_midas_timesheet, 'last_name')
     df_timesheet = merge_dataframes(df_timesheet, data_df_bigo_timesheet, 'last_name')
 
+    df_sales_by_category = create_empty_dataframe(start_date, end_date, stores)
+    df_sales_by_category = merge_dataframes(df_sales_by_category, data_df_midas_sales_by_category, 'category')
+
     # Combine all dataframes
+    # In the display_all_data function, modify the loop like this:
     for store in df.index:
         for date in df.columns:
-            missing_data = []
-            if df_sales.at[store, date] == 'No Data' or df_sales.at[store, date] == '':
-                missing_data.append('Sales Summary')
-            if df_tech.at[store, date] == 'No Data' or df_tech.at[store, date] == '':
-                missing_data.append('Tech')
-            if df_timesheet.at[store, date] == 'No Data' or df_timesheet.at[store, date] == '':
-                missing_data.append('Timesheet')
-            if not missing_data:
-                df.at[store, date] = 'All Data Exists'
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+            if date_obj.weekday() == 6:  # Sunday
+                df.at[store, date] = ''  # Empty string for Sundays
             else:
-                df.at[store, date] = f"Missing: {', '.join(missing_data)}"
+                missing_data = []
+                if df_sales.at[store, date] == 'No Data' or df_sales.at[store, date] == '':
+                    missing_data.append('Sales Summary')
+                if df_tech.at[store, date] == 'No Data' or df_tech.at[store, date] == '':
+                    missing_data.append('Tech')
+                if df_timesheet.at[store, date] == 'No Data' or df_timesheet.at[store, date] == '':
+                    missing_data.append('Timesheet')
+                if store.startswith('Midas'):  # Only check Sales By Category for Midas stores
+                    if df_sales_by_category.at[store, date] == 'No Data' or df_sales_by_category.at[store, date] == '':
+                        missing_data.append('Sales By Category')
+                if not missing_data:
+                    df.at[store, date] = 'All Data Exists'
+                else:
+                    df.at[store, date] = f"Missing: {', '.join(missing_data)}"
 
     display_all_reports_dataframe(view, df, results_table)
+
 
 def display_all_reports_dataframe(view, df, results_table):
     try:
@@ -170,18 +182,22 @@ def display_all_reports_dataframe(view, df, results_table):
         for row in range(len(df)):
             for col in range(len(df.columns)):
                 item = QTableWidgetItem()
-                cell_value = df.iloc[row, col]
-                item.setText(str(cell_value) if cell_value != 'No Data' else "")
                 date = datetime.strptime(df.columns[col], '%Y-%m-%d')
+
                 if date.strftime('%Y-%m-%d') in CLOSED_DAYS:
                     item.setBackground(Qt.black)
                     item.setText("Closed")
                 elif date.weekday() == 6:  # Sunday
                     item.setBackground(Qt.gray)
-                elif cell_value == 'All Data Exists':
-                    item.setBackground(Qt.green)
+                    item.setText("")  # Empty text for Sundays
                 else:
-                    item.setBackground(Qt.red)
+                    cell_value = df.iloc[row, col]
+                    item.setText(str(cell_value) if cell_value != 'No Data' else "")
+                    if cell_value == 'All Data Exists':
+                        item.setBackground(Qt.green)
+                    else:
+                        item.setBackground(Qt.red)
+
                 results_table.setItem(row, col, item)
     except Exception as e:
         print(f"Error displaying all reports data: {e}")
@@ -192,6 +208,6 @@ def display_sales_by_category_data(view, start_date, end_date, results_table):
     print(f"Store type for Sales By Category: {store_type}")  # Debug statement
     stores = filter_stores_by_type(store_type)
     df = create_empty_dataframe(start_date, end_date, stores)
-    data_df = query_sales_summary_data(start_date, end_date, store_type)
-    df = merge_dataframes(df, data_df, 'revenue')
+    data_df = query_sales_by_category_data(start_date, end_date, store_type)
+    df = merge_dataframes(df, data_df, 'category')
     display_dataframe(view, df, results_table)

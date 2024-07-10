@@ -1,6 +1,7 @@
 from database.ss_data import get_missing_ss_dates
 from database.tech_data import get_missing_midas_tech_dates, get_missing_bigo_tech_dates
-from config.app_settings import MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_SS_TABLE
+from database.sales_by_category_data import get_missing_sales_by_category_dates
+from config.app_settings import MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_SS_TABLE, MIDAS_SBA_TABLE
 from generators.helpers import generate_midas_reports, generate_bigo_reports
 
 def fetch_all_missing_data(view, stop_requested, progress_callback):
@@ -15,6 +16,7 @@ def fetch_all_missing_data(view, stop_requested, progress_callback):
         ss_midas = get_missing_ss_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE)
         tech_midas = get_missing_midas_tech_dates(start_date, end_date, MIDAS_STORE_NUMBERS, 'midas_tech_summary')
         timesheet_midas = {store: [(start_date_str, end_date_str)] for store in MIDAS_STORE_NUMBERS}
+        sales_by_category_midas = get_missing_sales_by_category_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SBA_TABLE)
 
         if not ss_midas and not tech_midas and not any(timesheet_midas.values()):
             progress_callback("Midas data is all up to date.")
@@ -22,10 +24,11 @@ def fetch_all_missing_data(view, stop_requested, progress_callback):
             progress_callback(f"Midas Sales Summary: {ss_midas}")
             progress_callback(f"Midas Tech Data: {tech_midas}")
             progress_callback(f"Midas Timesheet Data: {timesheet_midas}")
+            progress_callback(f"Midas Sales By Category Data: {sales_by_category_midas}")
             if stop_requested():
                 progress_callback("Fetch canceled.")
                 return
-            generate_midas_reports(ss_midas, tech_midas, timesheet_midas, stop_requested, progress_callback)
+            generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sales_by_category_midas, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         progress_callback("Fetching Bigo Data")
@@ -60,7 +63,7 @@ def fetch_missing_ss_data(view, stop_requested, progress_callback):
             if stop_requested():
                 progress_callback("Fetch canceled.")
                 return
-            generate_midas_reports(ss_midas, None, None, stop_requested, progress_callback)
+            generate_midas_reports(ss_midas, None, None, None, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         ss_bigo = get_missing_ss_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SS_TABLE)
@@ -89,7 +92,7 @@ def fetch_missing_tech_data(view, stop_requested, progress_callback):
             if stop_requested():
                 progress_callback("Fetch canceled.")
                 return
-            generate_midas_reports(None, tech_midas, None, stop_requested, progress_callback)
+            generate_midas_reports(None, tech_midas, None, None, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         tech_bigo = get_missing_bigo_tech_dates(start_date, end_date, 'bigo_tech_summary')
@@ -121,7 +124,7 @@ def fetch_missing_timesheet_data(view, stop_requested, progress_callback):
             if stop_requested():
                 progress_callback("Fetch canceled.")
                 return
-            generate_midas_reports(None, None, timesheet_midas, stop_requested, progress_callback)
+            generate_midas_reports(None, None, timesheet_midas, None, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
         progress_callback("Fetching Bigo Timesheet Data")
@@ -136,3 +139,20 @@ def fetch_missing_timesheet_data(view, stop_requested, progress_callback):
             generate_bigo_reports(None, None, timesheet_bigo, stop_requested, progress_callback)
 
     progress_callback("Fetching Timesheet data completed.")
+
+def fetch_missing_sales_by_category_data_midas(view, stop_requested, progress_callback):
+    store_type = view.store_type_combo.currentText()
+    start_date = view.start_date_edit.date().toPyDate()
+    end_date = view.end_date_edit.date().toPyDate()
+
+    if store_type == "All" or store_type == "Midas" or store_type == "Bigo":
+        sba_midas = get_missing_sales_by_category_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SBA_TABLE)
+        print(sba_midas)
+        if not sba_midas:
+            progress_callback("Sales By Category data for Midas is up to date.")
+        else:
+            progress_callback(f"Fetching Midas Sales By Category Data: {sba_midas}")
+            if stop_requested():
+                progress_callback("Fetch canceled.")
+                return
+            generate_midas_reports(None, None, None, sba_midas, stop_requested, progress_callback)

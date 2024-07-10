@@ -154,6 +154,43 @@ def query_timesheet_data(start_date, end_date, store_type):
         traceback.print_exc()
         return create_empty_dataframe(start_date, end_date, [])
 
+
+def query_sales_by_category_data(start_date, end_date, store_type):
+    try:
+        if store_type == "Midas":
+            stores = [f"Midas {store}" for store in MIDAS_STORE_NUMBERS]
+            query = f"""
+            SELECT wenco_id, date, category
+            FROM midas_sales_by_category
+            WHERE date BETWEEN '{start_date}' AND '{end_date}'
+            """
+        else:
+            raise ValueError("Invalid store type for Sales By Category")
+
+        print(f"Executing query for sales by category data: {query}")  # Debug statement
+        result_df = pd.read_sql(query, ENGINE)
+
+        # Create an empty dataframe
+        empty_df = create_empty_dataframe(start_date, end_date, stores)
+
+        # Populate the dataframe with query results
+        for _, row in result_df.iterrows():
+            store = f"Midas {row['wenco_id']}"
+            date = row['date']
+            value = row['category']
+            if store in empty_df.index and date in empty_df.columns:
+                if empty_df.at[store, date] == '':
+                    empty_df.at[store, date] = value
+                else:
+                    empty_df.at[store, date] += f", {value}"
+
+        print(f"Query result (formatted): {empty_df.shape}\n{empty_df.head()}")  # Debug statement
+        return empty_df
+    except Exception as e:
+        print(f"Error querying sales by category data: {e}")
+        traceback.print_exc()
+        return create_empty_dataframe(start_date, end_date, [])
+
 # Test functions for each query
 def test_query_sales_summary():
     print("Testing Sales Summary Query...")
@@ -179,7 +216,16 @@ def test_query_timesheet_data():
     result_df = query_timesheet_data(start_date, end_date, store_type)
     print(f"Test Timesheet Data Result: {result_df}")
 
+def test_query_sales_by_category_data():
+    print("Testing Sales By Category Data Query...")
+    start_date = '2024-07-08'
+    end_date = '2024-07-13'
+    store_type = 'Midas'
+    result_df = query_sales_by_category_data(start_date, end_date, store_type)
+    print(f"Test Sales By Category Data Result:\n{result_df}")
+
 if __name__ == "__main__":
     test_query_sales_summary()
     test_query_tech_data()
     test_query_timesheet_data()
+    test_query_sales_by_category_data()

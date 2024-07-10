@@ -50,11 +50,10 @@ class MidasSalesByCategory:
     parts: float = 0.0
     other: float = 0.0
     total: float = 0.0
-    stock: float = 0.0
-    inv: float = 0.0
-    non_stock: float = 0.0
-    sublet: float = 0.0
+    cost_of_stock_inv: float = 0.0
+    cost_of_non_stock: float = 0.0
+    sublet_costs: float = 0.0
     labor_costs: float = 0.0
-    costs: float = 0.0
+    total_costs: float = 0.0
     profit: float = 0.0
     job_avg: float = 0.0

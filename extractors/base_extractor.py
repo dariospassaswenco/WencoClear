@@ -33,7 +33,7 @@ class ReportExtractor:
                         cleaned_df = extractor.clean_data_frame(df)
                         extractor.delete_existing_records(cleaned_df, report_type)
                         extractor.store_data_frame(cleaned_df)
-                        extractor.move_processed_file(file_name)
+                        # extractor.move_processed_file(file_name)
                 else:
                     print(f"{file_name} Not Valid!")
             else:
