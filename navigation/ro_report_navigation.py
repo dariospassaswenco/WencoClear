@@ -122,6 +122,7 @@ class MidasReportActions(ReportActions):
             list_box = window.child_window(auto_id="gtlReports", control_type="List")
             sales_by_category = list_box.child_window(title="Sales by Category", control_type="ListItem")
             sales_by_category.double_click_input()
+            self.enter_password()
 
         self.perform_action_with_retry(action)
 
