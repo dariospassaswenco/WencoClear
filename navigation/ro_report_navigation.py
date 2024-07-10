@@ -119,13 +119,21 @@ class MidasReportActions(ReportActions):
     def sba_select_sba_report(self):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
-            window.print_ctrl_ids()
-            sba_report = window.child_window(title="Sales By Category", control_type="ListItem", found_index=0)
-            sba_report.double_click_input()
-            print("Sales By Category Report Selected")
-            self.enter_password()
-        #self.perform_action_with_retry(action)
-        action()
+            list_box = window.child_window(auto_id="gtlReports", control_type="List")
+
+            # Scroll the list to make sure "Sales by Category" is visible
+            for _ in range(30):  # Adjust the range as needed
+                list_box.wheel_mouse_input(wheel_dist=1)
+                try:
+                    sales_by_category = list_box.child_window(title="Sales by Category", control_type="ListItem")
+                    sales_by_category.click_input()
+                    return
+                except:
+                    pass
+
+            raise Exception("Sales by Category item not found")
+
+        self.perform_action_with_retry(action)
 
     def ts_select_employees(self):
         def action():
