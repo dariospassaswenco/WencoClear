@@ -106,6 +106,15 @@ class MidasReportActions(ReportActions):
             self.enter_password()
         self.perform_action_with_retry(action)
 
+    def sba_select_sba_report(self):
+        def action():
+            window = self.app.window(title="Reporting - R.O. Writer")
+            technician_report = window.child_window(title="Sales By Category", control_type="ListItem")
+            technician_report.double_click_input()
+            print("Sales By Category Report Selected")
+            self.enter_password()
+        self.perform_action_with_retry(action)
+
     def ts_select_employees(self):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
@@ -212,3 +221,4 @@ class MidasReportActions(ReportActions):
             close_button = sales_reports_dialog.child_window(title="Close", control_type="Button")
             close_button.click_input()
         self.perform_action_with_retry(action)
+

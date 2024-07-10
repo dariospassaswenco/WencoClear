@@ -101,7 +101,7 @@ class MidasReportGenerator(ReportGenerator):
                 formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
                 file_name = MIDAS_FILENAME_PATTERN.format(store_number=store_number, report_type='sba', date=date)
                 self.actions.enter_date_range(formatted_date, formatted_date)
-                self.actions.ss_select_ss_report()
+                self.actions.sba_select_sba_report()
                 self.actions.wait_for_report_to_compile()
                 self.actions.select_generate_report()
                 self.actions.enter_filename(file_name)
