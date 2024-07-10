@@ -94,6 +94,7 @@ class MidasReportGenerator(ReportGenerator):
 
     def generate_sales_by_category_reports(self, missing_dates_per_store):
         self.actions.select_sales_reports_menu()
+        self.actions.sba_find_report_in_list()
         self.actions.select_initial_store()
         for store_number, missing_dates in missing_dates_per_store.items():
             self.actions.select_current_store(store_number)

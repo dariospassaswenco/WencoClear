@@ -3,6 +3,7 @@ import time
 from pywinauto.application import Application
 from config.app_settings import *
 from pywinauto.findwindows import ElementNotFoundError
+from pywinauto.keyboard import send_keys
 
 class MidasReportActions(ReportActions):
     def __init__(self, app, config):
@@ -106,11 +107,17 @@ class MidasReportActions(ReportActions):
             self.enter_password()
         self.perform_action_with_retry(action)
 
+    def sba_find_report_in_list(self):
+        def action():
+            send_keys("Sal")
+
+        self.perform_action_with_retry(action)
+
     def sba_select_sba_report(self):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
-            technician_report = window.child_window(title="Sales By Category", control_type="ListItem")
-            technician_report.double_click_input()
+            sba_report = window.child_window(title="Sales By Category", control_type="ListItem")
+            sba_report.double_click_input()
             print("Sales By Category Report Selected")
             self.enter_password()
         self.perform_action_with_retry(action)
