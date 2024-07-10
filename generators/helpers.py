@@ -67,7 +67,7 @@ def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sba_midas, sto
                         progress_callback("Fetch canceled.")
                         return
                     progress_callback(f"Generating Sales By Category Report for store {store} on date {date}")
-            midas_generator.generate_sales_by_category_reports(ss_midas)
+            midas_generator.generate_sales_by_category_reports(sba_midas)
 
     except Exception as e:
         progress_callback(f"Error generating Midas reports: {e}. Retrying...")
