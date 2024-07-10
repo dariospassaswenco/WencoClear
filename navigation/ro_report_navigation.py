@@ -109,7 +109,9 @@ class MidasReportActions(ReportActions):
 
     def sba_find_report_in_list(self):
         def action():
+            time.sleep(2)
             send_keys("Sal")
+            print("typed keys")
 
         self.perform_action_with_retry(action)
 
