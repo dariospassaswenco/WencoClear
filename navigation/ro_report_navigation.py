@@ -110,7 +110,7 @@ class MidasReportActions(ReportActions):
     def sba_find_report_in_list(self):
         def action():
             time.sleep(2)
-            send_keys("Sal")
+            send_keys("rev")
             send_keys("{ENTER}")
             print("typed keys")
 
@@ -120,18 +120,8 @@ class MidasReportActions(ReportActions):
         def action():
             window = self.app.window(title="Reporting - R.O. Writer")
             list_box = window.child_window(auto_id="gtlReports", control_type="List")
-
-            # Scroll the list to make sure "Sales by Category" is visible
-            for _ in range(30):  # Adjust the range as needed
-                list_box.wheel_mouse_input(wheel_dist=1)
-                try:
-                    sales_by_category = list_box.child_window(title="Sales by Category", control_type="ListItem")
-                    sales_by_category.double_click_input()
-                    return
-                except:
-                    pass
-
-            raise Exception("Sales by Category item not found")
+            sales_by_category = list_box.child_window(title="Sales by Category", control_type="ListItem")
+            sales_by_category.double_click_input()
 
         self.perform_action_with_retry(action)
 
