@@ -60,10 +60,10 @@ def bigo_daily_update(start_date, end_date):
     if bigo_missing_tech:
         bigo_generator.generate_tech_reports(bigo_missing_tech)
         print("Bigo tech updated")
-    if timesheet_bigo():
+    if timesheet_bigo:
         bigo_generator.generate_timesheet_reports(timesheet_bigo)
         print("Bigo timesheet updated")
-    bigo_generator.actions.app_kill()
+    bigo_generator.actions.app.kill()
     print("Bigo reports updated successfully")
 
 
