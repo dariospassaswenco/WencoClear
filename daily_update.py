@@ -1,9 +1,9 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_STORE_NUMBERS, BIGO_SS_TABLE, \
-    CLOSED_DAYS
-from database.ss_data import get_missing_ss_dates, display_missing_ss_data
-from database.tech_data import get_missing_midas_tech_dates, get_missing_bigo_tech_dates, display_missing_tech_data, display_missing_bigo_tech_data
+from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_STORE_NUMBERS, BIGO_SS_TABLE, MIDAS_SBA_TABLE
+from database.ss_data import get_missing_ss_dates
+from database.sales_by_category_data import get_missing_sales_by_category_dates
+from database.tech_data import get_missing_midas_tech_dates, get_missing_bigo_tech_dates
 from generators.midas_report_generator import MidasReportGenerator
 from generators.helpers import break_into_payroll_periods
 from generators.bigo_report_generator import BigoReportGenerator
@@ -19,6 +19,8 @@ def midas_daily_update(start_date, end_date):
     print(f"midas missing tech: {midas_missing_tech}")
     timesheet_midas = {store: [(start_date_str, end_date_str)] for store in MIDAS_STORE_NUMBERS}
     print(f"midas timesheet: {timesheet_midas}")
+    missing_sales_by_category = get_missing_sales_by_category_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SBA_TABLE)
+    print(f"midas sales by category: {missing_sales_by_category}")
 
     midas_generator = MidasReportGenerator()
     midas_generator.prepare_pos()
@@ -31,6 +33,9 @@ def midas_daily_update(start_date, end_date):
     if timesheet_midas:
         midas_generator.generate_timesheet_reports(timesheet_midas)
         print("Midas timesheets updated")
+    if missing_sales_by_category:
+        midas_generator.generate_sales_by_category_reports(missing_sales_by_category)
+        print("Midas sales by category updated")
     midas_generator.actions.app.kill()
     print("Midas reports updated successfully")
 
