@@ -104,30 +104,45 @@ class MidasSalesByCategoryExtractor:
         match = re.search(pattern, line)
         if match:
             category = match.group(1).strip()
-            values = [MidasSalesByCategoryExtractor.clean_number(v) for v in match.groups()[1:]]
-            if len(values) == 13:
-                return MidasSalesByCategory(
-                    wenco_id=wenco_id,
-                    category=category,
-                    date=date,
-                    jobs=values[0],
-                    time=values[1],
-                    labor=values[2],
-                    parts=values[3],
-                    other=values[4],
-                    total=values[5],
-                    cost_of_stock_inv=values[6],
-                    cost_of_non_stock=values[7],
-                    sublet_costs=values[8],
-                    labor_costs=values[9],
-                    total_costs=values[10],
-                    profit=values[11] / 100,  # Convert percentage to decimal
-                    job_avg=values[12]
-                )
+            try:
+                values = []
+                for v in match.groups()[1:]:
+                    try:
+                        values.append(MidasSalesByCategoryExtractor.clean_number(v))
+                    except ValueError:
+                        print(
+                            f"Warning: Could not convert '{v}' to float in category '{category}'. Using default value.")
+                        values.append(0.9999)  # Use a default value for problematic fields
+
+                if len(values) == 13:
+                    return MidasSalesByCategory(
+                        wenco_id=wenco_id,
+                        category=category,
+                        date=date,
+                        jobs=values[0],
+                        time=values[1],
+                        labor=values[2],
+                        parts=values[3],
+                        other=values[4],
+                        total=values[5],
+                        cost_of_stock_inv=values[6],
+                        cost_of_non_stock=values[7],
+                        sublet_costs=values[8],
+                        labor_costs=values[9],
+                        total_costs=values[10],
+                        profit=values[11] / 100,  # Convert percentage to decimal
+                        job_avg=values[12]
+                    )
+                else:
+                    print(f"Unexpected number of values for category {category}: {len(values)}")
+            except Exception as e:
+                print(f"Error processing line for category '{category}': {e}")
         return None
 
     @staticmethod
     def clean_number(value):
-        # Remove commas, dollar signs, and handle parentheses for negative values
-        cleaned = value.replace(',', '').replace('$', '').replace('(', '-').replace(')', '')
+        # Remove commas and handle parentheses for negative values
+        cleaned = value.replace(',', '').replace('(', '-').replace(')', '')
+        # Remove any trailing dash
+        cleaned = cleaned.rstrip('-')
         return float(cleaned) if cleaned else 0.0
