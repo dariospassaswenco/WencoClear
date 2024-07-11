@@ -50,6 +50,9 @@ BIGO_SALES_SUMMARIES_DIR = config['Bigo']['salessummariesdir']
 BIGO_TIMESHEETS_DIR = config['Bigo']['timesheetsdir']
 BIGO_TECH_REPORTS_DIR = config['Bigo']['techreportsdir']
 
+# Logging
+LOGGING_DIR = config['Logging']['loggingdir']
+
 # ------------- File names -------------
 MIDAS_FILENAME_PATTERN = 'mid_{store_number}_{report_type}_{date}.pdf'
 BIGO_FILENAME_PATTERN = 'BGO_{store_number}_{report_type}_{date}.XLS'
