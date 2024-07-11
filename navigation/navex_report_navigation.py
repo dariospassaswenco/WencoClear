@@ -132,7 +132,6 @@ class BigoReportActions(ReportActions):
             documents.click_input()
             folder_output = save_as_dialog.child_window(title="WencoClearOutputs", control_type="ListItem")
             folder_output.double_click_input()
-            wait_until_passes(10, 1, lambda: folder_output.is_enabled())
             logger.info("File destination entered")
         self.perform_action_with_retry(action)
 
