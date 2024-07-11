@@ -39,29 +39,30 @@ class MidasReportActions(ReportActions):
         self.perform_action_with_retry(action)
 
     def enter_password(self):
-        def check_dialog_exists():
+        def action():
             window = self.app.window(title="Reporting - R.O. Writer")
-            dialog = window.child_window(auto_id="PasswordTextBox", control_type="Edit")
-            return dialog.exists()
 
-        def type_password():
+            # Check if dialog exists
+            dialog = window.child_window(auto_id="PasswordTextBox", control_type="Edit")
+            if not dialog.exists():
+                logger.info("Password dialog does not exist, continuing...")
+                return
+
+            # Type password
             password = self.config["password"]
-            window = self.app.window(title="Reporting - R.O. Writer")
-            dialog = window.child_window(auto_id="PasswordTextBox", control_type="Edit")
             dialog.type_keys(password, with_spaces=True)
-            logger.info("Password Typed")
+            logger.info("Password typed")
 
-        def click_ok():
-            window = self.app.window(title="Reporting - R.O. Writer")
+            # Click OK
             ok_button = window.child_window(title="Ok", auto_id="OkButton", control_type="Button")
             ok_button.click_input()
-            logger.info("Password Entered")
+            logger.info("Password OK button clicked")
 
-        if check_dialog_exists():
-            self.perform_action_with_retry(type_password)
-            self.perform_action_with_retry(click_ok)
-        else:
-            logger.info("Password dialog does not exist, continuing...")
+            # Verify that the password dialog is closed
+            if dialog.exists():
+                raise Exception("Password dialog still exists after clicking OK")
+
+        self.perform_action_with_retry(action)
 
     def select_sales_reports_menu(self):
         def action():

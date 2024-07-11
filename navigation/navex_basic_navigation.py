@@ -1,7 +1,9 @@
-from .base_basic_navigation import BasicNavigation
+from .base_basic_navigation import BasicNavigation, ReportActionError
 from config.pos_config import bigo_config
 from pywinauto.application import Application
 from pywinauto.keyboard import SendKeys
+from pywinauto.timings import wait_until_passes
+from config.logging import logger
 import time
 import psutil
 
@@ -25,72 +27,83 @@ class BigoNavigation(BasicNavigation):
         self.select_corporate_reports()
         self.security_login()
 
-
     def login(self):
-        app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
-        window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
-        window.set_focus()
+        def action():
+            app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
+            window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
+            window.set_focus()
 
-        user_id = window.child_window(title="cbouserid", control_type="ComboBox")
-        user_id.click_input()
-        time.sleep(5)
-        user_id.type_keys(self.config["username"])
-        SendKeys("{ENTER}")
-        time.sleep(2)
+            user_id = window.child_window(title="cbouserid", control_type="ComboBox")
+            user_id.click_input()
+            wait_until_passes(10, 1, lambda: user_id.is_enabled())
+            user_id.type_keys(self.config["username"])
+            SendKeys("{ENTER}")
+            wait_until_passes(10, 1, lambda: window.is_enabled())
 
-        password_edit = window.child_window(title="txtPassword", control_type="Edit")
-        password_edit.click_input()
-        password_edit.type_keys(self.config["password"])
-        SendKeys("{ENTER}")
-        print("Credentials Entered")
+            password_edit = window.child_window(title="txtPassword", control_type="Edit")
+            password_edit.click_input()
+            password_edit.type_keys(self.config["password"])
+            SendKeys("{ENTER}")
+            logger.info("Credentials Entered")
+
+        self.perform_action_with_retry(action)
 
     def activant_window(self):
-        app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
-        window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
-        activant = window.child_window(title="ACTIVANT Catalog Error", control_type="Window")
-        activant.child_window(title="OK", auto_id="2", control_type="Button").click_input()
-        print("Activant Window Closed")
+        def action():
+            app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
+            window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
+            activant = window.child_window(title="ACTIVANT Catalog Error", control_type="Window")
+            activant.child_window(title="OK", auto_id="2", control_type="Button").click_input()
+            logger.info("Activant Window Closed")
+
+        self.perform_action_with_retry(action)
 
     def select_corporate_reports(self):
-        app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
-        window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
-        window.set_focus()
-        time.sleep(1)
-        SendKeys("%a")
-        SendKeys("{ENTER}")
-        administration = window.child_window(title="Administration", control_type="Menu")
-        corporate_reports = administration.child_window(title="Corporate Reports", control_type="MenuItem")
-        corporate_reports.click_input()
+        def action():
+            app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
+            window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
+            window.set_focus()
+            wait_until_passes(10, 1, lambda: window.is_enabled())
+            SendKeys("%a")
+            SendKeys("{ENTER}")
+            administration = window.child_window(title="Administration", control_type="Menu")
+            corporate_reports = administration.child_window(title="Corporate Reports", control_type="MenuItem")
+            corporate_reports.click_input()
+            logger.info("Corporate Reports selected")
+
+        self.perform_action_with_retry(action)
 
     def security_login(self):
-        app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
-        window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
-        security_login = window.child_window(title="Security Login", control_type="Window")
+        def action():
+            app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
+            window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
+            security_login = window.child_window(title="Security Login", control_type="Window")
 
-        user_id = security_login.child_window(title="txtUserid", control_type="Edit")
-        user_id.type_keys(self.config["username"])
-        SendKeys("{ENTER}")
-        time.sleep(1)
+            user_id = security_login.child_window(title="txtUserid", control_type="Edit")
+            user_id.type_keys(self.config["username"])
+            SendKeys("{ENTER}")
+            wait_until_passes(10, 1, lambda: window.is_enabled())
 
-        password_input = security_login.child_window(title="txtPassword", control_type="Edit")
-        password_input.type_keys(self.config["password"])
-        SendKeys("{ENTER}")
+            password_input = security_login.child_window(title="txtPassword", control_type="Edit")
+            password_input.type_keys(self.config["password"])
+            SendKeys("{ENTER}")
+            logger.info("Security login completed")
+
+        self.perform_action_with_retry(action)
 
     def close_pos(self):
-        app = Application(backend='uia').connect(title='Solera/DST - Big O Home Office 9.5_STD_BGO')
-        window = app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
-        window.set_focus()
+        def action():
+            for process in psutil.process_iter(attrs=['pid', 'name']):
+                if "homoff.exe" in process.info['name']:
+                    try:
+                        process_obj = psutil.Process(process.info['pid'])
+                        process_obj.terminate()
+                        process_obj.wait(timeout=5)
+                        logger.info(f"{self.pos_name} closed")
+                    except psutil.NoSuchProcess:
+                        logger.warning(f"Process {self.pos_name} not found during close")
+                    except Exception as e:
+                        logger.error(f"Error closing {self.pos_name}: {e}")
+                        raise
 
-        for process in psutil.process_iter(attrs=['pid', 'name']):
-            if "homoff.exe" in process.info['name']:
-                try:
-                    process_obj = psutil.Process(process.info['pid'])
-                    process_obj.terminate()  # Terminate the process
-                    process_obj.wait(timeout=5)  # Optionally wait for the process to terminate
-                except psutil.NoSuchProcess:
-                    pass
-
-
-
-
-
+        self.perform_action_with_retry(action)
