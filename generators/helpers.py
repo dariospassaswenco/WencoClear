@@ -115,13 +115,14 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, sbc_bigo, stop_req
             bigo_generator.generate_timesheet_reports(timesheet_bigo)
 
         if sbc_bigo:
-            for store, dates in ss_bigo.items():
+            for store, dates in sbc_bigo.items():
                 for date in dates:
                     if stop_requested():
                         progress_callback("Fetch canceled.")
                         return
                     progress_callback(f"Generating Sales Summary Report BETA SBC for store {store} on date {date}")
             bigo_generator.generate_sbc_reports(sbc_bigo)
+
     except Exception as e:
         progress_callback(f"Error generating Bigo reports: {e}. Retrying...")
         bigo_generator.restart_pos()
