@@ -171,21 +171,44 @@ class BigoReportActions(ReportActions):
     def wait_for_report_to_compile(self):
         def action():
             window = self.app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
+
             def check_completion():
                 reports_window = window.child_window(title="Reports", control_type="Window")
                 home_office_window = window.child_window(title="Home Office", control_type="Window")
-                completion_button = home_office_window.child_window(title="OK", control_type="Button")
                 select_window = window.child_window(title="Select", control_type="Window")
+                completion_button = home_office_window.child_window(title="OK", control_type="Button")
+
                 if reports_window.exists():
-                    reports_window.child_window(title="OK", control_type="Button").click_input()
-                    return False
-                if reports_window.exists():
-                    select_window.child_window(title="Yes", control_type="Button").click_input()
-                    return False
-                elif completion_button.exists():
-                    completion_button.click_input()
-                    logger.info("Completion OK Button Clicked")
-                    return True
+                    logger.info("Reports window found")
+                    try:
+                        ok_button = reports_window.child_window(title="OK", control_type="Button")
+                        if ok_button.exists():
+                            logger.info("OK button found in Reports window")
+                            ok_button.click_input()
+                            return False
+                    except Exception as e:
+                        logger.error(f"Error interacting with Reports window OK button: {e}")
+
+                if select_window.exists():
+                    logger.info("Select window found")
+                    try:
+                        yes_button = select_window.child_window(title="Yes", control_type="Button")
+                        if yes_button.exists():
+                            logger.info("Yes button found in Select window")
+                            yes_button.click_input()
+                            return False
+                    except Exception as e:
+                        logger.error(f"Error interacting with Select window Yes button: {e}")
+
+                if completion_button.exists():
+                    logger.info("Completion OK button found")
+                    try:
+                        completion_button.click_input()
+                        logger.info("Completion OK Button Clicked")
+                        return True
+                    except Exception as e:
+                        logger.error(f"Error interacting with Completion OK button: {e}")
+
                 return False
 
             try:
