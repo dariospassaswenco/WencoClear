@@ -173,6 +173,7 @@ class BigoReportActions(ReportActions):
             window = self.app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
 
             def check_completion():
+                logger.info("Checking for completion...")
                 reports_window = window.child_window(title="Reports", control_type="Window")
                 home_office_window = window.child_window(title="Home Office", control_type="Window")
                 select_window = window.child_window(title="Select", control_type="Window")
@@ -209,6 +210,7 @@ class BigoReportActions(ReportActions):
                     except Exception as e:
                         logger.error(f"Error interacting with Completion OK button: {e}")
 
+                logger.info("No relevant windows/buttons found yet")
                 return False
 
             try:
