@@ -49,6 +49,7 @@ MIDAS_SBA_REPORTS_DIR = config['Midas']['sbareportsdir']
 BIGO_SALES_SUMMARIES_DIR = config['Bigo']['salessummariesdir']
 BIGO_TIMESHEETS_DIR = config['Bigo']['timesheetsdir']
 BIGO_TECH_REPORTS_DIR = config['Bigo']['techreportsdir']
+BIGO_SBA_REPORTS_DIR = config['Bigo']['sbareportsdir']
 
 # Logging
 LOGGING_DIR = config['Logging']['loggingdir']
@@ -66,6 +67,7 @@ MIDAS_SBA_TABLE = "midas_sales_by_category"
 BIGO_SS_TABLE = "bigo_sales_summary"
 BIGO_TIMESHEET_TABLE = "bigo_timesheet"
 BIGO_TECH_TABLE = "bigo_tech_summary"
+BIGO_SBA_TABLE = "bigo_sales_by_category"
 
 # Create a SQLAlchemy engine
 ENGINE = create_engine(f'sqlite:///{CLEAR_DATABASE_PATH}')

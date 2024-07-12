@@ -39,3 +39,22 @@ class BigoTechSummary:
     labor_revenue: float = 0.0
     total_revenue: float = 0.0
     gross_profit: float = 0.0
+
+@dataclass
+class BigoSalesByCategory:
+    wenco_id: int = 0
+    date: str = ""
+    sales_category: str = ""
+    parts_quantity: float = 0.0
+    parts_sales: float = 0.0
+    labor_quantity: float = 0.0
+    labor_sales: float = 0.0
+    discounts_quantity: float = 0.0
+    discounts_amount: float = 0.0
+    ext_cost: float = 0.0
+    gross_profit_percent: float = 0.0
+    gross_profit: float = 0.0
+    total_sales: float = 0.0
+
+
+
