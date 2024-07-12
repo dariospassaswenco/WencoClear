@@ -182,6 +182,7 @@ class BigoReportActions(ReportActions):
                     select_window.child_window(title="Yes", control_type="Button").click_input()
                     return False
                 elif home_office_window.exists():
+                    time.sleep(1)
                     home_office_window.child_window(title="OK", control_type="Button").click_input()
                     logger.info("Completion OK Button Clicked")
                     return True
