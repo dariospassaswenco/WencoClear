@@ -143,7 +143,7 @@ def fetch_missing_timesheet_data(view, stop_requested, progress_callback):
 
     progress_callback("Fetching Timesheet data completed.")
 
-def fetch_missing_sales_by_category_data_midas(view, stop_requested, progress_callback):
+def fetch_missing_sales_by_category_data(view, stop_requested, progress_callback):
     store_type = view.store_type_combo.currentText()
     start_date = view.start_date_edit.date().toPyDate()
     end_date = view.end_date_edit.date().toPyDate()
@@ -166,7 +166,7 @@ def fetch_missing_sales_by_category_data_midas(view, stop_requested, progress_ca
         if not sba_bigo:
             progress_callback("Sales By Category data for Bigo is up to date.")
         else:
-            progress_callback(f"Fetching Midas Sales By Category Data: {sba_bigo}")
+            progress_callback(f"Fetching Bigo Sales By Category Data: {sba_bigo}")
             if stop_requested():
                 progress_callback("Fetch canceled.")
                 return

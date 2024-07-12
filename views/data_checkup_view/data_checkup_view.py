@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPush
 from .helpers import run_data_checkup
 from views.fetch_worker import FetchWorker
 from .fetch_functions import fetch_all_missing_data, fetch_missing_ss_data, fetch_missing_tech_data, \
-    fetch_missing_timesheet_data, fetch_missing_sales_by_category_data_midas
+    fetch_missing_timesheet_data, fetch_missing_sales_by_category_data
 from config.app_settings import CLOSED_DAYS
 
 
@@ -164,7 +164,7 @@ class DataCheckupView(QWidget):
         elif report_type == "Timesheet Data":
             fetch_function = fetch_missing_timesheet_data
         elif report_type == "Sales By Category":
-            fetch_function = fetch_missing_sales_by_category_data_midas
+            fetch_function = fetch_missing_sales_by_category_data
         else:
             self.append_progress(f"Unknown report type: {report_type}")
             return
