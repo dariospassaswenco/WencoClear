@@ -161,7 +161,7 @@ def fetch_missing_sales_by_category_data_midas(view, stop_requested, progress_ca
             generate_midas_reports(None, None, None, sba_midas, stop_requested, progress_callback)
 
     if store_type == "All" or store_type == "Bigo":
-        sba_bigo = get_missing_sales_by_category_dates(start_date, end_date, MIDAS_STORE_NUMBERS, MIDAS_SBA_TABLE)
+        sba_bigo = get_missing_sales_by_category_dates(start_date, end_date, BIGO_STORE_NUMBERS, BIGO_SBA_TABLE)
         print(sba_bigo)
         if not sba_bigo:
             progress_callback("Sales By Category data for Bigo is up to date.")
