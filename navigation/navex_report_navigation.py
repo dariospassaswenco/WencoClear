@@ -183,6 +183,7 @@ class BigoReportActions(ReportActions):
                     return False
                 elif home_office_window.exists():
                     home_office_window.child_window(title="OK", control_type="Button").click_input()
+                    logger.info("Completion OK Button Clicked")
                     return True
                 return False
 
