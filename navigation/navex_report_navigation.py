@@ -174,8 +174,12 @@ class BigoReportActions(ReportActions):
             def check_completion():
                 reports_window = window.child_window(title="Reports", control_type="Window")
                 home_office_window = window.child_window(title="Home Office", control_type="Window")
+                select_window = window.child_window(title="Select", control_type="Window")
                 if reports_window.exists():
                     reports_window.child_window(title="OK", control_type="Button").click_input()
+                    return False
+                if reports_window.exists():
+                    select_window.child_window(title="Yes", control_type="Button").click_input()
                     return False
                 elif home_office_window.exists():
                     home_office_window.child_window(title="OK", control_type="Button").click_input()
