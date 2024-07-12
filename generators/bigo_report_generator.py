@@ -79,3 +79,19 @@ class BigoReportGenerator(ReportGenerator):
             self.actions.wait_for_report_to_compile()
             self.actions.cleanup_and_close(end_date_str)
         self.extractor.extract_reports()
+
+    def generate_sbc_reports(self, missing_dates_per_store):
+        self.actions.select_report(self.config["sbc_report_title"])
+        for store_number, missing_dates in missing_dates_per_store.items():
+            self.actions.select_current_store(store_number)
+            for date in missing_dates:
+                formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
+                file_name = BIGO_FILENAME_PATTERN.format(store_number=store_number, report_type='SBA', date=date)
+                self.actions.enter_date_range(formatted_date, formatted_date)
+                self.actions.select_generate_report()  # Clicking Excel button
+                self.actions.enter_file_destination()
+                self.actions.enter_filename(file_name)
+                self.actions.save_file()
+                self.actions.wait_for_report_to_compile()
+                self.actions.cleanup_and_close(date)
+            self.extractor.extract_reports()  # Extract the files for that store along the way

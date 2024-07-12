@@ -155,6 +155,10 @@ def query_timesheet_data(start_date, end_date, store_type):
         return create_empty_dataframe(start_date, end_date, [])
 
 
+import pandas as pd
+import traceback
+from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS
+
 def query_sales_by_category_data(start_date, end_date, store_type):
     try:
         if store_type == "Midas":
@@ -164,10 +168,19 @@ def query_sales_by_category_data(start_date, end_date, store_type):
             FROM midas_sales_by_category
             WHERE date BETWEEN '{start_date}' AND '{end_date}'
             """
+            table_name = "midas_sales_by_category"
+        elif store_type == "Bigo":
+            stores = [f"Bigo {store}" for store in BIGO_STORE_NUMBERS]
+            query = f"""
+            SELECT wenco_id, date, sales_category
+            FROM bigo_sales_by_category
+            WHERE date BETWEEN '{start_date}' AND '{end_date}'
+            """
+            table_name = "bigo_sales_by_category"
         else:
             raise ValueError("Invalid store type for Sales By Category")
 
-        print(f"Executing query for sales by category data: {query}")  # Debug statement
+        print(f"Executing query for {store_type} sales by category data: {query}")  # Debug statement
         result_df = pd.read_sql(query, ENGINE)
 
         # Create an empty dataframe
@@ -175,9 +188,9 @@ def query_sales_by_category_data(start_date, end_date, store_type):
 
         # Populate the dataframe with query results
         for _, row in result_df.iterrows():
-            store = f"Midas {row['wenco_id']}"
+            store = f"{store_type} {row['wenco_id']}"
             date = row['date']
-            value = row['category']
+            value = row['sales_category']
             if store in empty_df.index and date in empty_df.columns:
                 if empty_df.at[store, date] == '':
                     empty_df.at[store, date] = value

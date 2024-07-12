@@ -123,6 +123,7 @@ def display_all_data(view, start_date, end_date, results_table):
     data_df_midas_timesheet = query_timesheet_data(start_date, end_date, "Midas")
     data_df_bigo_timesheet = query_timesheet_data(start_date, end_date, "Bigo")
     data_df_midas_sales_by_category = query_sales_by_category_data(start_date, end_date, "Midas")
+    data_df_bigo_sales_by_category = query_sales_by_category_data(start_date, end_date, "Bigo")
 
     df_sales = create_empty_dataframe(start_date, end_date, stores)
     df_sales = merge_dataframes(df_sales, data_df_midas_sales, 'revenue')
@@ -138,9 +139,9 @@ def display_all_data(view, start_date, end_date, results_table):
 
     df_sales_by_category = create_empty_dataframe(start_date, end_date, stores)
     df_sales_by_category = merge_dataframes(df_sales_by_category, data_df_midas_sales_by_category, 'category')
+    df_sales_by_category = merge_dataframes(df_sales_by_category, data_df_bigo_sales_by_category, 'category')
 
     # Combine all dataframes
-    # In the display_all_data function, modify the loop like this:
     for store in df.index:
         for date in df.columns:
             date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -154,9 +155,8 @@ def display_all_data(view, start_date, end_date, results_table):
                     missing_data.append('Tech')
                 if df_timesheet.at[store, date] == 'No Data' or df_timesheet.at[store, date] == '':
                     missing_data.append('Timesheet')
-                if store.startswith('Midas'):  # Only check Sales By Category for Midas stores
-                    if df_sales_by_category.at[store, date] == 'No Data' or df_sales_by_category.at[store, date] == '':
-                        missing_data.append('Sales By Category')
+                if df_sales_by_category.at[store, date] == 'No Data' or df_sales_by_category.at[store, date] == '':
+                    missing_data.append('Sales By Category')
                 if not missing_data:
                     df.at[store, date] = 'All Data Exists'
                 else:
@@ -204,10 +204,17 @@ def display_all_reports_dataframe(view, df, results_table):
         traceback.print_exc()
 
 def display_sales_by_category_data(view, start_date, end_date, results_table):
-    store_type = "Midas"  # This is specific to Midas
+    store_type = view.store_type_combo.currentText()
     print(f"Store type for Sales By Category: {store_type}")  # Debug statement
     stores = filter_stores_by_type(store_type)
     df = create_empty_dataframe(start_date, end_date, stores)
-    data_df = query_sales_by_category_data(start_date, end_date, store_type)
-    df = merge_dataframes(df, data_df, 'category')
+
+    if store_type == "All" or store_type == "Midas":
+        data_df_midas = query_sales_by_category_data(start_date, end_date, "Midas")
+        df = merge_dataframes(df, data_df_midas, 'category')
+
+    if store_type == "All" or store_type == "Bigo":
+        data_df_bigo = query_sales_by_category_data(start_date, end_date, "Bigo")
+        df = merge_dataframes(df, data_df_bigo, 'category')
+
     display_dataframe(view, df, results_table)

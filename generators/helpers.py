@@ -77,7 +77,7 @@ def generate_midas_reports(ss_midas, tech_midas, timesheet_midas, sba_midas, sto
     midas_generator.actions.app.kill()  # Close POS
     progress_callback("Midas Reports Generated.")
 
-def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, progress_callback):
+def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, sbc_bigo, stop_requested, progress_callback):
     bigo_generator = BigoReportGenerator()
     progress_callback("Preparing Bigo POS...")
     bigo_generator.prepare_pos()
@@ -113,10 +113,19 @@ def generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, pr
                     return
                 progress_callback(f"Generating Timesheet Report from {date_range[0]} to {date_range[1]}")
             bigo_generator.generate_timesheet_reports(timesheet_bigo)
+
+        if sbc_bigo:
+            for store, dates in ss_bigo.items():
+                for date in dates:
+                    if stop_requested():
+                        progress_callback("Fetch canceled.")
+                        return
+                    progress_callback(f"Generating Sales Summary Report BETA SBC for store {store} on date {date}")
+            bigo_generator.generate_sbc_reports(sbc_bigo)
     except Exception as e:
         progress_callback(f"Error generating Bigo reports: {e}. Retrying...")
         bigo_generator.restart_pos()
-        generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, stop_requested, progress_callback)
+        generate_bigo_reports(ss_bigo, tech_bigo, timesheet_bigo, sbc_bigo, stop_requested, progress_callback)
 
     bigo_generator.actions.app.kill()  # Close POS
     progress_callback("Bigo Reports Generated.")

@@ -28,5 +28,6 @@ bigo_config = {
     "ss_report_title": "SALES SUMMARY BY GROUP CODE",
     "tech_report_title": "MECHANIC SALES SUMMARY BY GROUP CODE",
     "timesheet_report_title": "EMPLOYEE TIME-CLOCK HOURS",
+    "sbc_report_title": "SALES SUMMARY BY GROUP CODE - BETA",
 }
 

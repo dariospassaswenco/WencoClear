@@ -191,6 +191,7 @@ class BigoReportActions(ReportActions):
 
         self.perform_action_with_retry(action)
 
+
     def cleanup_and_close(self, date):
         def action():
             excel_windows = [window for window in gw.getAllTitles() if date in window]
