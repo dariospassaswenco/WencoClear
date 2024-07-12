@@ -40,7 +40,7 @@ class BigoReportGenerator(ReportGenerator):
                 self.actions.enter_filename(file_name)
                 self.actions.save_file()
                 self.actions.wait_for_report_to_compile()
-                self.actions.cleanup_and_close(date)
+                self.actions.cleanup_and_close()
             self.extractor.extract_reports()  # Extract the files for that store along the way
 
     def generate_timesheet_reports(self, missing_dates):
@@ -57,7 +57,7 @@ class BigoReportGenerator(ReportGenerator):
             self.actions.save_file()
             self.actions.ts_select_employees()
             self.actions.wait_for_report_to_compile()
-            self.actions.cleanup_and_close(end_date_str)
+            self.actions.cleanup_and_close()
             delete_bigo_timesheet_entries(start_date_str, end_date_str)
         self.extractor.extract_reports()
 
@@ -77,7 +77,7 @@ class BigoReportGenerator(ReportGenerator):
             self.actions.save_file()
             self.actions.ts_select_employees()
             self.actions.wait_for_report_to_compile()
-            self.actions.cleanup_and_close(end_date_str)
+            self.actions.cleanup_and_close()
         self.extractor.extract_reports()
 
     def generate_sbc_reports(self, missing_dates_per_store):
@@ -94,5 +94,5 @@ class BigoReportGenerator(ReportGenerator):
                 self.actions.enter_filename(file_name)
                 self.actions.save_file()
                 self.actions.wait_for_report_to_compile()
-                self.actions.cleanup_and_close(date)
+                self.actions.cleanup_and_close()
             self.extractor.extract_reports()  # Extract the files for that store along the way
