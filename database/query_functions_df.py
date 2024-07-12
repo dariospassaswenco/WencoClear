@@ -100,19 +100,6 @@ def query_tech_data(start_date, end_date, store_type):
         traceback.print_exc()
         return create_empty_dataframe(start_date, end_date, [])
 
-# Test function
-def test_query_tech_data():
-    print("Testing Tech Data Query...")
-    start_date = '2024-06-01'
-    end_date = '2024-06-08'
-    result_df = query_tech_data(start_date, end_date, 'Midas')
-    print(f"Test Tech Data Result for Midas:\n{result_df}")
-    result_df = query_tech_data(start_date, end_date, 'Bigo')
-    print(f"Test Tech Data Result for Bigo:\n{result_df}")
-
-if __name__ == "__main__":
-    test_query_tech_data()
-
 
 def query_timesheet_data(start_date, end_date, store_type):
     try:
@@ -155,10 +142,6 @@ def query_timesheet_data(start_date, end_date, store_type):
         return create_empty_dataframe(start_date, end_date, [])
 
 
-import pandas as pd
-import traceback
-from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, BIGO_STORE_NUMBERS
-
 def query_sales_by_category_data(start_date, end_date, store_type):
     try:
         if store_type == "Midas":
@@ -168,7 +151,7 @@ def query_sales_by_category_data(start_date, end_date, store_type):
             FROM midas_sales_by_category
             WHERE date BETWEEN '{start_date}' AND '{end_date}'
             """
-            table_name = "midas_sales_by_category"
+            column_name = 'category'
         elif store_type == "Bigo":
             stores = [f"Bigo {store}" for store in BIGO_STORE_NUMBERS]
             query = f"""
@@ -176,7 +159,7 @@ def query_sales_by_category_data(start_date, end_date, store_type):
             FROM bigo_sales_by_category
             WHERE date BETWEEN '{start_date}' AND '{end_date}'
             """
-            table_name = "bigo_sales_by_category"
+            column_name = 'sales_category'
         else:
             raise ValueError("Invalid store type for Sales By Category")
 
@@ -190,7 +173,7 @@ def query_sales_by_category_data(start_date, end_date, store_type):
         for _, row in result_df.iterrows():
             store = f"{store_type} {row['wenco_id']}"
             date = row['date']
-            value = row['sales_category']
+            value = row[column_name]
             if store in empty_df.index and date in empty_df.columns:
                 if empty_df.at[store, date] == '':
                     empty_df.at[store, date] = value
