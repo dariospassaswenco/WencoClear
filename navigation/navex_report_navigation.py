@@ -177,12 +177,13 @@ class BigoReportActions(ReportActions):
             window = self.app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
 
             def check_completion():
+                time.sleep(3)
                 try:
                     completion_button = window.child_window(title="OK", control_type="Button")
                     if completion_button.exists():
                         completion_button.click_input()
                         logger.info("Completion OK Button Clicked")
-                        time.sleep(3)
+                        time.sleep(1)
                         return True
                     else:
                         logger.info("Completion button not found yet")
