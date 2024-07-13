@@ -175,31 +175,30 @@ class BigoReportActions(ReportActions):
     def wait_for_report_to_compile(self):
         def action():
             window = self.app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
+            timeout_duration = 60
+            start_time = time.time()
 
-            def check_completion():
+            while time.time() - start_time < timeout_duration:
                 try:
-                    completion_button = window.child_window(title="OK", control_type="Button")
-                    if completion_button.exists():
-                        completion_button.click_input()
-                        logger.info("Completion OK Button Clicked")
-                        # Immediately check if the report compilation is complete
-                        if not completion_button.exists():
-                            return True
-                        else:
-                            return False
-                    else:
-                        logger.info("Completion button not found yet")
-                        return False
-                except Exception as e:
-                    logger.error(f"Error clicking Completion OK button: {e}")
-                    return False
+                    reports_window = window.child_window(title="Reports", control_type="Window")
+                    home_office_window = window.child_window(title="Home Office", control_type="Window")
 
-            try:
-                wait_until(45, 0.1, check_completion)
-                logger.info("Report compilation completed")
-            except TimeoutError:
-                logger.error("Report compilation timed out")
-                raise ReportActionError("Report compilation timed out")
+                    if reports_window.exists():
+                        reports_window.child_window(title="OK", control_type="Button").click_input()
+                        logger.info("Reports OK Button Clicked")
+                        time.sleep(0.5)
+                    elif home_office_window.exists():
+                        home_office_window.child_window(title="OK", control_type="Button").click_input()
+                        logger.info("Home Office OK Button Clicked")
+                        time.sleep(1)
+                        break  # Exit the loop when either window is found
+
+                    logger.info("Waiting for report to compile...")
+                    time.sleep(1)  # Adjust sleep interval as needed
+                except Exception as e:
+                    logger.error(f"Error during report compilation: {e}")
+
+            logger.info("Report compilation completed or timed out")
 
         self.perform_action_with_retry(action)
 
