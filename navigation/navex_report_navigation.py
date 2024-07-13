@@ -177,49 +177,43 @@ class BigoReportActions(ReportActions):
             window = self.app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
 
             def check_completion():
-                logger.info("Checking for completion...")
-                try:
-                    reports_window = window.child_window(title="Reports", control_type="Window")
-                    home_office_window = window.child_window(title="Home Office", control_type="Window")
-                    select_window = window.child_window(title="Select", control_type="Window")
-                    completion_button = home_office_window.child_window(title="OK", control_type="Button")
+                reports_window = window.child_window(title="Reports", control_type="Window")
+                home_office_window = window.child_window(title="Home Office", control_type="Window")
+                select_window = window.child_window(title="Select", control_type="Window")
 
-                    if reports_window.exists():
-                        logger.info("Reports window found")
-                        ok_button = reports_window.child_window(title="OK", control_type="Button")
-                        if ok_button.exists():
-                            logger.info("OK button found in Reports window")
-                            ok_button.click_input()
-                            return False
+                if reports_window.exists():
+                    try:
+                        reports_window.child_window(title="OK", control_type="Button").click_input()
+                        logger.info("Reports OK Button Clicked")
+                    except Exception as e:
+                        logger.error(f"Error clicking Reports OK button: {e}")
+                    return False
 
-                    if select_window.exists():
-                        logger.info("Select window found")
-                        yes_button = select_window.child_window(title="Yes", control_type="Button")
-                        if yes_button.exists():
-                            logger.info("Yes button found in Select window")
-                            yes_button.click_input()
-                            return False
+                if select_window.exists():
+                    try:
+                        select_window.child_window(title="Yes", control_type="Button").click_input()
+                        logger.info("Select Yes Button Clicked")
+                    except Exception as e:
+                        logger.error(f"Error clicking Select Yes button: {e}")
+                    return False
 
-                    if completion_button.exists():
-                        logger.info("Completion OK button found")
+                completion_button = home_office_window.child_window(title="OK", control_type="Button")
+                if completion_button.exists():
+                    try:
                         completion_button.click_input()
                         logger.info("Completion OK Button Clicked")
-                        return True
+                    except Exception as e:
+                        logger.error(f"Error clicking Completion OK button: {e}")
+                    return True
 
-                except Exception as e:
-                    logger.error(f"Error during check_completion: {e}")
-
-                logger.info("No relevant windows/buttons found yet")
                 return False
 
-            while True:
-                try:
-                    if wait_until(60, 1, check_completion):
-                        logger.info("Report compilation completed")
-                        break
-                except TimeoutError:
-                    logger.error("Report compilation timed out")
-                    raise ReportActionError("Report compilation timed out")
+            try:
+                wait_until_passes(45, 0.5, check_completion)
+                logger.info("Report compilation completed")
+            except TimeoutError:
+                logger.error("Report compilation timed out")
+                raise ReportActionError("Report compilation timed out")
 
         self.perform_action_with_retry(action)
 
