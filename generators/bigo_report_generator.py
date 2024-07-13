@@ -87,7 +87,6 @@ class BigoReportGenerator(ReportGenerator):
             self.actions.select_current_store(store_number)
             self.actions.select_current_store(store_number)
             for date in missing_dates:
-                print(date)
                 formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
                 file_name = BIGO_FILENAME_PATTERN.format(store_number=store_number, report_type='SBA', date=date)
                 self.actions.enter_date_range(formatted_date, formatted_date)

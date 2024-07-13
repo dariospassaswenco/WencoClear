@@ -183,7 +183,9 @@ class BigoReportActions(ReportActions):
                         completion_button.click_input()
                         logger.info("Completion OK Button Clicked")
                         return True
-                    return False
+                    else:
+                        logger.info("Completion button not found yet")
+                        return False
                 except Exception as e:
                     logger.error(f"Error clicking Completion OK button: {e}")
                     return False
