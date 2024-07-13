@@ -182,6 +182,7 @@ class BigoReportActions(ReportActions):
                     if completion_button.exists():
                         completion_button.click_input()
                         logger.info("Completion OK Button Clicked")
+                        time.sleep(3)
                         return True
                     else:
                         logger.info("Completion button not found yet")
