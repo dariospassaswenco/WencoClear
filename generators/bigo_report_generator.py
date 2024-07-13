@@ -31,6 +31,7 @@ class BigoReportGenerator(ReportGenerator):
         self.actions.select_report(self.config["ss_report_title"])
         for store_number, missing_dates in missing_dates_per_store.items():
             self.actions.select_current_store(store_number)
+            self.actions.select_current_store(store_number)
             for date in missing_dates:
                 formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m%d%Y')
                 file_name = BIGO_FILENAME_PATTERN.format(store_number=store_number, report_type='ss', date=date)
