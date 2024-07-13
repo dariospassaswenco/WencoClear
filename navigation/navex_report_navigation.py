@@ -180,10 +180,13 @@ class BigoReportActions(ReportActions):
                 try:
                     completion_button = window.child_window(title="OK", control_type="Button")
                     if completion_button.exists():
-                        logger.info("Completion OK Button Found")
                         completion_button.click_input()
                         logger.info("Completion OK Button Clicked")
-                        return True
+                        # Immediately check if the report compilation is complete
+                        if not completion_button.exists():
+                            return True
+                        else:
+                            return False
                     else:
                         logger.info("Completion button not found yet")
                         return False
@@ -192,7 +195,7 @@ class BigoReportActions(ReportActions):
                     return False
 
             try:
-                wait_until(45, 0.5, check_completion)
+                wait_until(45, 0.1, check_completion)
                 logger.info("Report compilation completed")
             except TimeoutError:
                 logger.error("Report compilation timed out")
