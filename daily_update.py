@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_STORE_NUMBERS, BIGO_SS_TABLE, MIDAS_SBA_TABLE
+from config.app_settings import ENGINE, MIDAS_STORE_NUMBERS, MIDAS_SS_TABLE, BIGO_STORE_NUMBERS, BIGO_SS_TABLE, MIDAS_SBA_TABLE, BIGO_SBA_TABLE
 from database.ss_data import get_missing_ss_dates
 from database.sales_by_category_data import get_missing_sales_by_category_dates
 from database.tech_data import get_missing_midas_tech_dates, get_missing_bigo_tech_dates
@@ -51,6 +51,9 @@ def bigo_daily_update(start_date, end_date):
     timesheet_bigo = [(start_date_str, end_date_str)]
     timesheet_bigo = break_into_payroll_periods(timesheet_bigo)
     print(f"bigo timesheet: {timesheet_bigo}")
+    missing_sales_by_category = get_missing_sales_by_category_dates(start_date, end_date, BIGO_STORE_NUMBERS,
+                                                                    BIGO_SBA_TABLE)
+    print(f"bigo sales by category: {missing_sales_by_category}")
 
     bigo_generator = BigoReportGenerator()
     bigo_generator.prepare_pos()
@@ -63,6 +66,9 @@ def bigo_daily_update(start_date, end_date):
     if timesheet_bigo:
         bigo_generator.generate_timesheet_reports(timesheet_bigo)
         print("Bigo timesheet updated")
+    if missing_sales_by_category:
+        bigo_generator.generate_sbc_reports(missing_sales_by_category)
+        print("Bigo SBC updated")
     bigo_generator.actions.app.kill()
     print("Bigo reports updated successfully")
 
