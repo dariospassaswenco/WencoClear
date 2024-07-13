@@ -177,36 +177,16 @@ class BigoReportActions(ReportActions):
             window = self.app.window(title="Solera/DST - Big O Home Office 9.5_STD_BGO", control_type="Window")
 
             def check_completion():
-                reports_window = window.child_window(title="Reports", control_type="Window")
-                home_office_window = window.child_window(title="Home Office", control_type="Window")
-                select_window = window.child_window(title="Select", control_type="Window")
-
-                if reports_window.exists():
-                    try:
-                        reports_window.child_window(title="OK", control_type="Button").click_input()
-                        logger.info("Reports OK Button Clicked")
-                    except Exception as e:
-                        logger.error(f"Error clicking Reports OK button: {e}")
-                    return False
-
-                if select_window.exists():
-                    try:
-                        select_window.child_window(title="Yes", control_type="Button").click_input()
-                        logger.info("Select Yes Button Clicked")
-                    except Exception as e:
-                        logger.error(f"Error clicking Select Yes button: {e}")
-                    return False
-
-                completion_button = home_office_window.child_window(title="OK", control_type="Button")
-                if completion_button.exists():
-                    try:
+                try:
+                    completion_button = window.child_window(title="OK", control_type="Button")
+                    if completion_button.exists():
                         completion_button.click_input()
                         logger.info("Completion OK Button Clicked")
-                    except Exception as e:
-                        logger.error(f"Error clicking Completion OK button: {e}")
-                    return True
-
-                return False
+                        return True
+                    return False
+                except Exception as e:
+                    logger.error(f"Error clicking Completion OK button: {e}")
+                    return False
 
             try:
                 wait_until_passes(45, 0.5, check_completion)
