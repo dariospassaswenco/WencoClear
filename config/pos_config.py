@@ -25,9 +25,9 @@ bigo_config = {
     "password": NAVEX_PASSWORD,
     "main_window_title": "Solera/DST - Big O Home Office 9.5_STD_BGO",
     "reporting_window_title": "Solera/DST - Big O Home Office 9.5_STD_BGO",
-    "ss_report_title": "SALES SUMMARY BY GROUP CODE",
+    "ss_report_title": "SALES SUMMARY BY GROUP CODE - W/DIS",
     "tech_report_title": "MECHANIC SALES SUMMARY BY GROUP CODE",
     "timesheet_report_title": "EMPLOYEE TIME-CLOCK HOURS",
-    "sbc_report_title": "SALES SUMMARY BY GROUP CODE - BETA",
+    "sbc_report_title": "SALES SUMMARY BY GROUP CODE - W/DIS",
 }
 
